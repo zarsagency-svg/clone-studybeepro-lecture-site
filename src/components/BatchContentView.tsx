@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import logo from '../assets/logo.jpg';
 import {
   CourseContentItem,
   CourseOverviewData,
@@ -483,8 +484,11 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
             onClick={onBackToHome}
             className="flex items-center gap-3 cursor-pointer btn-click-effect"
           >
+            <div className="w-8 h-8 md:w-9 md:h-9 bg-black border border-white/10 rounded-lg flex items-center justify-center overflow-hidden">
+              <img src={logo} alt="MindSpark logo" className="w-full h-full object-cover" />
+            </div>
             <h1 className="text-lg font-bold tracking-wider text-white font-syne">
-              XHASHIK <span className="text-themeYellow">STUDY</span>
+              MIND<span className="text-themeRed">SPARK</span>
             </h1>
           </div>
         </div>
@@ -500,11 +504,11 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           <div className="w-full flex flex-col flex-1 pb-12">
             {/* Course Banner */}
             <div className="bg-[#121212] border border-white/5 rounded-2xl p-6 md:p-8 flex flex-col-reverse md:flex-row items-center justify-between gap-8 mb-8 shadow-xl relative overflow-hidden">
-              <div className="absolute -top-32 -left-32 w-64 h-64 bg-themeYellow/10 blur-[100px] rounded-full pointer-events-none" />
+              <div className="absolute -top-32 -left-32 w-64 h-64 bg-themeRed/10 blur-[100px] rounded-full pointer-events-none" />
 
               <div className="flex flex-col items-start gap-3 flex-1 w-full relative z-10">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-medium text-themeYellow uppercase tracking-wider bg-themeYellow/10 px-2.5 py-1 rounded border border-themeYellow/20">
+                  <span className="text-xs font-medium text-themeRed uppercase tracking-wider bg-themeRed/10 px-2.5 py-1 rounded border border-themeRed/20">
                     Premium Course
                   </span>
                   {effectiveCourseId !== courseId && (
@@ -519,7 +523,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 <div className="flex flex-wrap items-center gap-3 mt-2">
                   <button
                     onClick={() => setActiveTab('content')}
-                    className="bg-themeYellow hover:bg-yellow-400 text-black px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors btn-click-effect shadow-md"
+                    className="bg-themeRed hover:bg-red-500 text-black px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors btn-click-effect shadow-md"
                   >
                     <i className="fa-solid fa-play" /> Browse Lectures &amp; Notes
                   </button>
@@ -528,7 +532,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                       onClick={() => setActiveTab('live')}
                       className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors btn-click-effect"
                     >
-                      <i className="fa-solid fa-video text-themeYellow" /> Live &amp; Marathon Classes
+                      <i className="fa-solid fa-video text-themeRed" /> Live &amp; Marathon Classes
                     </button>
                   )}
                 </div>
@@ -551,7 +555,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 onClick={() => setActiveTab('overview')}
                 className={`pb-3 text-sm md:text-base font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap btn-click-effect shrink-0 ${
                   activeTab === 'overview'
-                    ? 'text-themeYellow border-themeYellow'
+                    ? 'text-themeRed border-themeRed'
                     : 'text-textDim hover:text-white border-transparent'
                 }`}
               >
@@ -561,7 +565,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 onClick={() => setActiveTab('content')}
                 className={`pb-3 text-sm md:text-base font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap btn-click-effect shrink-0 ${
                   activeTab === 'content'
-                    ? 'text-themeYellow border-themeYellow'
+                    ? 'text-themeRed border-themeRed'
                     : 'text-textDim hover:text-white border-transparent'
                 }`}
               >
@@ -576,7 +580,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 onClick={() => setActiveTab('live')}
                 className={`pb-3 text-sm md:text-base font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap btn-click-effect shrink-0 ${
                   activeTab === 'live'
-                    ? 'text-themeYellow border-themeYellow'
+                    ? 'text-themeRed border-themeRed'
                     : 'text-textDim hover:text-white border-transparent'
                 }`}
               >
@@ -591,7 +595,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 {overview?.packages && overview.packages.length > 0 && (
                   <div>
                     <h3 className="text-sm font-bold uppercase tracking-wider text-stone-400 mb-4 flex items-center gap-2">
-                      <i className="fa-solid fa-layer-group text-themeYellow" /> Included Combo Packages
+                      <i className="fa-solid fa-layer-group text-themeRed" /> Included Combo Packages
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {overview.packages.map((pkg) => (
@@ -624,11 +628,11 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-sm font-bold uppercase tracking-wider text-stone-400 flex items-center gap-2">
-                        <i className="fa-solid fa-folder-tree text-themeYellow" /> Subject Folders &amp; Lectures
+                        <i className="fa-solid fa-folder-tree text-themeRed" /> Subject Folders &amp; Lectures
                       </h3>
                       <button
                         onClick={() => setActiveTab('content')}
-                        className="text-xs font-bold text-themeYellow hover:underline flex items-center gap-1"
+                        className="text-xs font-bold text-themeRed hover:underline flex items-center gap-1"
                       >
                         Open Full Content Browser <i className="fa-solid fa-arrow-right text-[10px]" />
                       </button>
@@ -664,7 +668,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 {/* Course Description Box */}
                 <div className="bg-[#121212] border border-white/5 rounded-xl p-6 md:p-8 text-gray-300 leading-relaxed text-sm md:text-base course-desc-html">
                   <h3 className="text-white font-bold text-base mb-4 pb-3 border-b border-white/5 flex items-center gap-2">
-                    <i className="fa-solid fa-circle-info text-themeYellow" /> Batch Details &amp; Syllabus
+                    <i className="fa-solid fa-circle-info text-themeRed" /> Batch Details &amp; Syllabus
                   </h3>
                   {overviewLoading ? (
                     <p className="animate-pulse text-stone-400">Loading description...</p>
@@ -702,7 +706,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                                 : 'text-textDim hover:text-white cursor-pointer'
                             }`}
                           >
-                            {isFirst && <i className="fa-solid fa-home mr-0.5 text-themeYellow" />}
+                            {isFirst && <i className="fa-solid fa-home mr-0.5 text-themeRed" />}
                             <span>{folder.title}</span>
                           </button>
                           {!isLast && (
@@ -717,7 +721,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 {/* Loader */}
                 {contentLoading ? (
                   <div className="flex flex-col justify-center items-center py-20">
-                    <i className="fa-solid fa-circle-notch fa-spin text-3xl text-themeYellow mb-3" />
+                    <i className="fa-solid fa-circle-notch fa-spin text-3xl text-themeRed mb-3" />
                     <p className="text-stone-400 text-sm font-medium">Loading content...</p>
                   </div>
                 ) : folderItems.length > 0 ? (
@@ -782,7 +786,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
 
                 {liveLoading ? (
                   <div className="flex flex-col justify-center items-center py-20">
-                    <i className="fa-solid fa-circle-notch fa-spin text-3xl text-themeYellow mb-3" />
+                    <i className="fa-solid fa-circle-notch fa-spin text-3xl text-themeRed mb-3" />
                     <p className="text-stone-400 text-sm font-medium">
                       Fetching recent live &amp; recorded classes...
                     </p>
@@ -822,7 +826,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                     </p>
                     <button
                       onClick={() => setActiveTab('content')}
-                      className="px-5 py-2 rounded-lg bg-themeYellow text-black font-bold text-xs uppercase tracking-wider"
+                      className="px-5 py-2 rounded-lg bg-themeRed text-black font-bold text-xs uppercase tracking-wider"
                     >
                       Open Subject Folders
                     </button>
@@ -869,7 +873,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 </button>
                 <button
                   onClick={fetchTestDataAndStart}
-                  className="px-6 py-2.5 rounded-lg font-bold text-sm bg-themeYellow hover:bg-yellow-400 text-black transition-colors btn-click-effect"
+                  className="px-6 py-2.5 rounded-lg font-bold text-sm bg-themeRed hover:bg-red-500 text-black transition-colors btn-click-effect"
                 >
                   Start Assessment
                 </button>
@@ -888,7 +892,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 </h2>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="bg-black/50 text-white px-3 py-1.5 rounded text-sm font-mono border border-white/10 flex items-center gap-2">
-                    <i className="fa-regular fa-clock text-themeYellow" />
+                    <i className="fa-regular fa-clock text-themeRed" />
                     <span>{formatExamTimer(remainingSeconds)}</span>
                   </div>
                   <button
@@ -938,17 +942,17 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                             onClick={() => handleSelectOption(qId, opt.key)}
                             className={`flex items-center p-3.5 px-4 rounded-lg border cursor-pointer transition-all text-sm ${
                               isChecked
-                                ? 'bg-themeYellow/5 border-themeYellow text-white'
+                                ? 'bg-themeRed/5 border-themeRed text-white'
                                 : 'bg-[#18181b] border-white/5 text-gray-200 hover:bg-[#27272a]'
                             }`}
                           >
                             <div
                               className={`w-[18px] h-[18px] rounded-full border-2 mr-3 flex items-center justify-center shrink-0 transition-colors ${
-                                isChecked ? 'border-themeYellow' : 'border-zinc-600'
+                                isChecked ? 'border-themeRed' : 'border-zinc-600'
                               }`}
                             >
                               {isChecked && (
-                                <div className="w-2 h-2 rounded-full bg-themeYellow" />
+                                <div className="w-2 h-2 rounded-full bg-themeRed" />
                               )}
                             </div>
                             <div
@@ -985,7 +989,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                     className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-colors btn-click-effect ${
                       currentQuestionIndex === testQuestions.length - 1
                         ? 'bg-white text-black hover:bg-gray-200'
-                        : 'bg-themeYellow text-black hover:bg-yellow-400'
+                        : 'bg-themeRed text-black hover:bg-red-500'
                     }`}
                   >
                     {currentQuestionIndex === testQuestions.length - 1
@@ -1004,7 +1008,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
             <div className="bg-[#121212] border border-white/5 rounded-2xl p-6 md:p-10 max-w-3xl mx-auto">
               <div className="text-center mb-10">
                 <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
-                  <i className="fa-solid fa-flag-checkered text-2xl text-themeYellow" />
+                  <i className="fa-solid fa-flag-checkered text-2xl text-themeRed" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
                   Assessment Complete
@@ -1088,7 +1092,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
               <div className="flex justify-center">
                 <button
                   onClick={() => setViewMode('content')}
-                  className="px-8 py-3 rounded-xl font-bold text-sm bg-themeYellow hover:bg-yellow-400 text-black transition-colors btn-click-effect"
+                  className="px-8 py-3 rounded-xl font-bold text-sm bg-themeRed hover:bg-red-500 text-black transition-colors btn-click-effect"
                 >
                   Back to Course Content
                 </button>
@@ -1114,7 +1118,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
             <div className="flex flex-col gap-2.5 w-full">
               <button
                 onClick={handleWatchNowFromModal}
-                className="w-full px-4 py-2.5 rounded-lg font-semibold text-sm bg-themeYellow hover:bg-yellow-400 text-black transition-colors btn-click-effect flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 rounded-lg font-semibold text-sm bg-themeRed hover:bg-red-500 text-black transition-colors btn-click-effect flex items-center justify-center gap-2"
               >
                 <i className="fa-solid fa-play" /> Watch Now
               </button>
@@ -1146,7 +1150,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                         href={q.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-2 rounded-lg bg-white/10 hover:bg-themeYellow hover:text-black text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                        className="px-3 py-2 rounded-lg bg-white/10 hover:bg-themeRed hover:text-black text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
                       >
                         <i className="fa-solid fa-download text-[10px]" /> {q.title}p
                       </a>
@@ -1183,7 +1187,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
               </button>
               <button
                 onClick={handleConfirmSubmitTest}
-                className="flex-1 px-4 py-2.5 rounded-lg font-bold text-sm bg-themeYellow hover:bg-yellow-400 text-black transition-colors btn-click-effect"
+                className="flex-1 px-4 py-2.5 rounded-lg font-bold text-sm bg-themeRed hover:bg-red-500 text-black transition-colors btn-click-effect"
               >
                 Submit
               </button>
@@ -1195,7 +1199,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
       {/* =================== EXAM LOADING MODAL =================== */}
       {examLoadingText && (
         <div className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-md flex items-center justify-center flex-col">
-          <i className="fa-solid fa-circle-notch fa-spin text-3xl text-themeYellow mb-4" />
+          <i className="fa-solid fa-circle-notch fa-spin text-3xl text-themeRed mb-4" />
           <h2 className="text-sm font-semibold text-white tracking-wide">{examLoadingText}</h2>
         </div>
       )}
@@ -1258,7 +1262,7 @@ const ContentGridCard: React.FC<ContentGridCardProps> = ({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[#18181b]">
-              <i className="fa-solid fa-folder text-4xl text-themeYellow drop-shadow-[0_0_15px_rgba(250,204,21,0.3)] group-hover:scale-110 transition-transform" />
+              <i className="fa-solid fa-folder text-4xl text-themeRed drop-shadow-[0_0_15px_rgba(250,204,21,0.3)] group-hover:scale-110 transition-transform" />
             </div>
           )}
         </div>
@@ -1308,7 +1312,7 @@ const ContentGridCard: React.FC<ContentGridCardProps> = ({
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full bg-themeYellow/90 text-black flex items-center justify-center opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all shadow-lg">
+              <div className="w-10 h-10 rounded-full bg-themeRed/90 text-black flex items-center justify-center opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all shadow-lg">
                 <i className="fa-solid fa-play text-xs ml-0.5" />
               </div>
             </div>
@@ -1327,8 +1331,8 @@ const ContentGridCard: React.FC<ContentGridCardProps> = ({
                   <i className="fa-regular fa-clock" /> UPCOMING
                 </span>
               ) : (
-                <span className="bg-black/60 backdrop-blur-sm text-themeYellow text-[10px] font-bold px-2 py-0.5 rounded border border-white/10 flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-themeYellow" /> VIDEO
+                <span className="bg-black/60 backdrop-blur-sm text-themeRed text-[10px] font-bold px-2 py-0.5 rounded border border-white/10 flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-themeRed" /> VIDEO
                 </span>
               )}
             </div>
@@ -1389,7 +1393,7 @@ const ContentGridCard: React.FC<ContentGridCardProps> = ({
     return (
       <div
         style={{ animationDelay: delay }}
-        className="col-span-full glass-card rounded-[20px] overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between p-4 transition-all duration-200 animate-pop-in border border-white/5 hover:border-themeYellow/30"
+        className="col-span-full glass-card rounded-[20px] overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between p-4 transition-all duration-200 animate-pop-in border border-white/5 hover:border-themeRed/30"
       >
         <div className="flex items-start sm:items-center gap-4 mb-4 sm:mb-0">
           <div className="w-14 h-14 shrink-0 bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-500/20 group-hover:scale-105 transition-transform">
@@ -1407,7 +1411,7 @@ const ContentGridCard: React.FC<ContentGridCardProps> = ({
 
         <button
           onClick={() => onTestClick(item.entity_id, item.title)}
-          className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm bg-white/10 hover:bg-themeYellow hover:text-black text-white transition-colors btn-click-effect"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold text-sm bg-white/10 hover:bg-themeRed hover:text-black text-white transition-colors btn-click-effect"
         >
           Start Assessment
         </button>

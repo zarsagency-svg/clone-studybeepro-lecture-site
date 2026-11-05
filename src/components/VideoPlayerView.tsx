@@ -70,7 +70,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [buffering, setBuffering] = useState(false);
 
-  const [title, setTitle] = useState(params.title || 'Xhashik Study');
+  const [title, setTitle] = useState(params.title || 'MindSpark');
   const [isYouTube, setIsYouTube] = useState(false);
   const [youtubeId, setYoutubeId] = useState<string | null>(null);
 
@@ -523,7 +523,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <Loader2 className="w-10 h-10 text-themeYellow animate-spin mb-4" />
+          <Loader2 className="w-10 h-10 text-themeRed animate-spin mb-4" />
           <p className="text-stone-400 text-sm font-medium animate-pulse">{loaderMsg}</p>
         </div>
       )}
@@ -542,7 +542,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
           <div className="flex items-center gap-3 mt-2">
             <button
               onClick={initPlayback}
-              className="bg-themeYellow text-black px-5 py-2 rounded-xl text-sm font-bold active:scale-95 hover:bg-yellow-400 transition-colors"
+              className="bg-themeRed text-black px-5 py-2 rounded-xl text-sm font-bold active:scale-95 hover:bg-red-500 transition-colors"
             >
               Retry Stream
             </button>
@@ -624,7 +624,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
             {/* Buffering Spinner */}
             {buffering && !loading && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                <div className="w-14 h-14 border-4 border-themeYellow/30 border-t-themeYellow rounded-full animate-spin" />
+                <div className="w-14 h-14 border-4 border-themeRed/30 border-t-themeRed rounded-full animate-spin" />
               </div>
             )}
 
@@ -716,7 +716,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
                       {params.siblingPdfs && params.siblingPdfs.length > 0 && (
                         <div className="flex flex-col gap-1.5">
-                          <span className="text-[10px] text-themeYellow font-semibold">
+                          <span className="text-[10px] text-themeRed font-semibold">
                             Chapter PDF Notes
                           </span>
                           {params.siblingPdfs.map((pdf) => (
@@ -751,7 +751,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                                 href={dq.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-themeYellow hover:text-black text-xs font-bold text-zinc-200 flex items-center justify-center gap-1.5 transition-colors"
+                                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-themeRed hover:text-black text-xs font-bold text-zinc-200 flex items-center justify-center gap-1.5 transition-colors"
                               >
                                 <Download className="w-3 h-3" />
                                 {dq.title}p
@@ -800,7 +800,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                     />
                     <div className="w-full h-1.5 bg-white/20 rounded-full relative overflow-hidden">
                       <div
-                        className="absolute top-0 left-0 bottom-0 bg-themeYellow rounded-full shadow-[0_0_10px_#FACC15]"
+                        className="absolute top-0 left-0 bottom-0 bg-themeRed rounded-full shadow-[0_0_10px_#FACC15]"
                         style={{ width: `${progressPct}%` }}
                       />
                     </div>
@@ -815,7 +815,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   <div className="flex items-center gap-4 sm:gap-6">
                     <button
                       onClick={(e) => skipSeconds(-10, e)}
-                      className="text-white hover:text-themeYellow transition-colors"
+                      className="text-white hover:text-themeRed transition-colors"
                       title="Rewind 10s"
                     >
                       <RotateCcw className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -823,7 +823,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
                     <button
                       onClick={togglePlay}
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-themeYellow text-black flex items-center justify-center hover:scale-105 transition-all shadow-[0_0_20px_rgba(250,204,21,0.4)]"
+                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-themeRed text-black flex items-center justify-center hover:scale-105 transition-all shadow-[0_0_20px_rgba(250,204,21,0.4)]"
                     >
                       {isPlaying ? (
                         <Pause className="w-6 h-6 sm:w-7 sm:h-7 fill-current" />
@@ -834,7 +834,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
                     <button
                       onClick={(e) => skipSeconds(10, e)}
-                      className="text-white hover:text-themeYellow transition-colors"
+                      className="text-white hover:text-themeRed transition-colors"
                       title="Forward 10s"
                     >
                       <RotateCw className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -844,7 +844,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
                     <button
                       onClick={toggleMute}
-                      className="hidden sm:block text-white hover:text-themeYellow transition-colors"
+                      className="hidden sm:block text-white hover:text-themeRed transition-colors"
                     >
                       {isMuted ? (
                         <VolumeX className="w-6 h-6" />
@@ -857,7 +857,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   <div className="flex items-center gap-4 sm:gap-6">
                     <button
                       onClick={togglePiP}
-                      className="text-white hover:text-themeYellow transition-colors hidden sm:block"
+                      className="text-white hover:text-themeRed transition-colors hidden sm:block"
                       title="Picture in Picture"
                     >
                       <PictureInPicture className="w-6 h-6" />
@@ -871,12 +871,12 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                           setSettingsSubmenu('main');
                           setActiveMenu(activeMenu === 'settings' ? 'none' : 'settings');
                         }}
-                        className="text-white hover:text-themeYellow transition-colors flex items-center"
+                        className="text-white hover:text-themeRed transition-colors flex items-center"
                         title="Settings"
                       >
                         <Settings
                           className={`w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-300 ${
-                            activeMenu === 'settings' ? 'rotate-90 text-themeYellow' : ''
+                            activeMenu === 'settings' ? 'rotate-90 text-themeRed' : ''
                           }`}
                         />
                       </button>
@@ -893,7 +893,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                                 className="w-full flex items-center justify-between p-3 hover:bg-white/10 rounded-xl text-sm font-bold text-zinc-200 transition-colors"
                               >
                                 Quality
-                                <span className="flex items-center gap-1 text-themeYellow">
+                                <span className="flex items-center gap-1 text-themeRed">
                                   <span>{selectedQualityLabel}</span>
                                   <ChevronRight className="w-4 h-4" />
                                 </span>
@@ -903,7 +903,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                                 className="w-full flex items-center justify-between p-3 hover:bg-white/10 rounded-xl text-sm font-bold text-zinc-200 transition-colors"
                               >
                                 Speed
-                                <span className="flex items-center gap-1 text-themeYellow">
+                                <span className="flex items-center gap-1 text-themeRed">
                                   <span>{playbackSpeed}x</span>
                                   <ChevronRight className="w-4 h-4" />
                                 </span>
@@ -928,7 +928,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                                       onClick={() => handleQualitySelect(qOpt)}
                                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-sm font-bold transition-colors ${
                                         isSelected
-                                          ? 'bg-themeYellow/10 text-themeYellow'
+                                          ? 'bg-themeRed/10 text-themeRed'
                                           : 'text-zinc-300 hover:bg-white/10'
                                       }`}
                                     >
@@ -958,7 +958,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                                       onClick={() => handleSpeedSelect(spd)}
                                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-sm font-bold transition-colors ${
                                         isSelected
-                                          ? 'bg-themeYellow/10 text-themeYellow'
+                                          ? 'bg-themeRed/10 text-themeRed'
                                           : 'text-zinc-300 hover:bg-white/10'
                                       }`}
                                     >
@@ -976,7 +976,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
                     <button
                       onClick={toggleFullscreen}
-                      className="text-white hover:text-themeYellow transition-colors"
+                      className="text-white hover:text-themeRed transition-colors"
                       title="Toggle Fullscreen"
                     >
                       {isFullscreen ? (

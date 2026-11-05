@@ -4,9 +4,9 @@
   --color-themeBg: #0a0a0a;
   --color-cardBg: #121212;
   --color-cardHover: #1a1a1a;
-  --color-themeYellow: #FACC15;
-  --color-themeYellowHover: #EAB308;
-  --color-themeAmber: #F59E0B;
+  --color-themeRed: #EF4444;
+  --color-themeRedHover: #DC2626;
+  --color-themeRedDeep: #B91C1C;
   --color-themeGreen: #10B981;
   --color-textDim: #a1a1aa;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;

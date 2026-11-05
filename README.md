@@ -1,4 +1,4 @@
-# Xhashik Study
+# MindSpark
 
 A single-page lecture/course-browsing web app: browse course batches, open batch content (folders, videos, PDFs, tests, links, notes), stream lectures with an HLS player, and view PDFs in an in-app modal.
 

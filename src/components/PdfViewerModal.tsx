@@ -85,7 +85,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
                 download
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3.5 py-2 rounded-lg bg-themeYellow hover:bg-yellow-400 text-black text-xs font-bold flex items-center gap-1.5 transition-colors btn-click-effect"
+                className="px-3.5 py-2 rounded-lg bg-themeRed hover:bg-red-500 text-black text-xs font-bold flex items-center gap-1.5 transition-colors btn-click-effect"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Download</span>
@@ -105,7 +105,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
       <div className="flex-1 w-full bg-[#0a0a0a] relative flex items-center justify-center overflow-hidden">
         {loading && (
           <div className="flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-9 h-9 text-themeYellow animate-spin" />
+            <Loader2 className="w-9 h-9 text-themeRed animate-spin" />
             <p className="text-stone-400 text-sm font-medium">Decrypting &amp; Loading PDF Notes...</p>
           </div>
         )}

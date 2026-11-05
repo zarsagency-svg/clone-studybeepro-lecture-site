@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import logo from './assets/logo.jpg';
 import {
   LayoutGrid,
   Bookmark,
@@ -280,8 +281,11 @@ export function App() {
             onClick={() => switchTab('new')}
             className="flex items-center gap-3 cursor-pointer btn-click-effect"
           >
+            <div className="w-9 h-9 bg-black border border-white/10 rounded-lg flex items-center justify-center relative z-10 overflow-hidden">
+              <img src={logo} alt="MindSpark logo" className="w-full h-full object-cover" />
+            </div>
             <h1 className="text-xl font-black tracking-wider text-white font-syne">
-              XHASHIK <span className="text-themeYellow">STUDY</span>
+              MIND<span className="text-themeRed">SPARK</span>
             </h1>
           </div>
 
@@ -290,7 +294,7 @@ export function App() {
               onClick={() => switchTab('new')}
               className={`${
                 currentTab === 'new' ? 'text-white' : 'text-stone-400'
-              } hover:text-themeYellow font-bold text-sm transition-colors flex items-center gap-2 btn-click-effect`}
+              } hover:text-themeRed font-bold text-sm transition-colors flex items-center gap-2 btn-click-effect`}
             >
               <LayoutGrid className="w-4 h-4" /> Batches
             </button>
@@ -307,7 +311,7 @@ export function App() {
           <div className="md:hidden flex items-center gap-3">
             <button
               onClick={() => switchTab('wishlist')}
-              className="text-stone-300 p-2 border border-white/10 rounded-lg hover:text-themeYellow hover:border-themeYellow transition-colors btn-click-effect relative bg-white/5"
+              className="text-stone-300 p-2 border border-white/10 rounded-lg hover:text-themeRed hover:border-themeRed transition-colors btn-click-effect relative bg-white/5"
             >
               <Bookmark className="w-5 h-5" />
               {wishlist.length > 0 && (
@@ -334,7 +338,7 @@ export function App() {
                   : 'bg-transparent text-stone-400 hover:text-stone-200 border-transparent'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-themeYellow" />
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-themeRed" />
               Latest <span className="hidden sm:inline">Batches</span>
             </button>
 
@@ -362,7 +366,7 @@ export function App() {
               className={`shrink-0 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-sm font-bold transition-all flex items-center gap-1.5 border btn-click-effect ${
                 currentTab === 'old'
                   ? 'bg-white/10 text-white border-white/10'
-                  : 'bg-transparent text-stone-400 hover:text-themeYellow border-transparent'
+                  : 'bg-transparent text-stone-400 hover:text-themeRed border-transparent'
               }`}
             >
               <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -384,7 +388,7 @@ export function App() {
                 setDisplayedCount(ITEMS_PER_PAGE);
               }}
               placeholder="Search batches..."
-              className="w-full bg-[#121212] border border-white/10 text-white text-sm rounded-lg block pl-10 pr-10 py-2.5 transition-all placeholder:text-stone-600 focus:outline-none focus:border-themeYellow/50 focus:bg-[#1a1a1a]"
+              className="w-full bg-[#121212] border border-white/10 text-white text-sm rounded-lg block pl-10 pr-10 py-2.5 transition-all placeholder:text-stone-600 focus:outline-none focus:border-themeRed/50 focus:bg-[#1a1a1a]"
             />
             {searchQuery.length > 0 && (
               <button
@@ -403,7 +407,7 @@ export function App() {
         {/* Loading Indicator */}
         {loadingBatches ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-themeYellow mb-3" />
+            <Loader2 className="w-8 h-8 animate-spin text-themeRed mb-3" />
             <p className="text-stone-400 font-medium text-sm">Loading batches...</p>
           </div>
         ) : filteredBatches.length === 0 ? (
@@ -481,7 +485,7 @@ export function App() {
 
                         <button
                           onClick={() => handleOpenBatch(id)}
-                          className="bg-themeYellow hover:bg-yellow-400 text-black px-4 py-2 rounded text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors btn-click-effect shadow-md"
+                          className="bg-themeRed hover:bg-red-500 text-black px-4 py-2 rounded text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors btn-click-effect shadow-md"
                         >
                           Let&apos;s Study <ArrowRight className="w-3.5 h-3.5" />
                         </button>
