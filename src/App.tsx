@@ -23,6 +23,7 @@ import { BatchContentView } from './components/BatchContentView';
 import { VideoPlayerView, ActiveVideoParams } from './components/VideoPlayerView';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { VerificationGate, hasActiveVerification } from './components/VerificationGate';
+import { TelegramInviteModal } from './components/TelegramInviteModal';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -528,6 +529,9 @@ export function App() {
       </main>
 
       {pdfModalElement}
+
+      {/* Telegram channel invitation on entry */}
+      <TelegramInviteModal />
     </div>
   );
 }
