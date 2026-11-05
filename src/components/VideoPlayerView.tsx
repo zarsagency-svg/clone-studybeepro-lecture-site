@@ -70,7 +70,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [buffering, setBuffering] = useState(false);
 
-  const [title, setTitle] = useState(params.title || 'StudyBee Media');
+  const [title, setTitle] = useState(params.title || 'Xhashik Study');
   const [isYouTube, setIsYouTube] = useState(false);
   const [youtubeId, setYoutubeId] = useState<string | null>(null);
 

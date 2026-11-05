@@ -1,6 +1,6 @@
-# StudyBeePro Lecture Site — Clone
+# Xhashik Study
 
-A single-page web app that recreates the StudyBeePro lecture/course-browsing experience: browse course batches, open batch content (folders, videos, PDFs, tests, links, notes), stream lectures with an HLS player, and view PDFs in an in-app modal.
+A single-page lecture/course-browsing web app: browse course batches, open batch content (folders, videos, PDFs, tests, links, notes), stream lectures with an HLS player, and view PDFs in an in-app modal.
 
 Built with **React 19 + Vite 7 + TypeScript + Tailwind CSS 4**.
 

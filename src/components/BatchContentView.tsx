@@ -483,15 +483,8 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
             onClick={onBackToHome}
             className="flex items-center gap-3 cursor-pointer btn-click-effect"
           >
-            <div className="w-8 h-8 md:w-9 md:h-9 bg-black border border-white/10 rounded-lg flex items-center justify-center overflow-hidden">
-              <img
-                src="https://i.ibb.co/yF4mhNPB/f493d534-fbf8-4b31-b741-83b343f8a9e1.jpg"
-                alt="Logo"
-                className="w-full h-full object-cover"
-              />
-            </div>
             <h1 className="text-lg font-bold tracking-wider text-white font-syne">
-              STUDY<span className="text-themeYellow">BEE</span>
+              XHASHIK <span className="text-themeYellow">STUDY</span>
             </h1>
           </div>
         </div>
