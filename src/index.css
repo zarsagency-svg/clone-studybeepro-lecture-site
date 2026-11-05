@@ -52,6 +52,20 @@ body {
   transform: scale(0.95);
 }
 
+.animate-pop {
+  animation: pop 0.35s ease-out;
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .premium-card {
   background-color: #121212;
   border: 1px solid rgba(255, 255, 255, 0.05);
