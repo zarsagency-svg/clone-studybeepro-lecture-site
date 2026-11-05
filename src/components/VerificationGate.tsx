@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2,
   Copy,
@@ -65,13 +65,37 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
     onVerified();
   };
 
+  // Auto-unlock: the short link redirects back to this site carrying the key
+  // in the URL hash (#unlock=MS-...). Consume it and verify instantly.
+  useEffect(() => {
+    const m = /#unlock=(MS-[0-9A-Fa-f-]+)/.exec(window.location.hash);
+    if (!m) return;
+    const returnedKey = m[1].toUpperCase();
+    try {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    } catch {
+      // ignore history errors in sandboxed iframes
+    }
+    if (/^MS-[0-9A-F]{18}$/.test(returnedKey)) {
+      saveAccess(returnedKey);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleGenerate = () => {
     const nextKey = createKey();
     setGeneratedKey(nextKey);
     setKey(nextKey);
     setShortUrl('');
     setShortError('');
-    setMessage('Key generated. Now shorten the link below using the shortener, open it, complete the step, then enter your key to unlock.');
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+      setDestinationUrl(`${window.location.origin}${window.location.pathname}#unlock=${nextKey}`);
+      setMessage(
+        'Key generated. The shortener destination below already points back to MindSpark with your key - shorten it, open the short link, and after the short-link step you land back here auto-unlocked for 48 hours.'
+      );
+    } else {
+      setMessage('Key generated. Now shorten the link below using the shortener, open it, complete the step, then enter your key to unlock.');
+    }
     setError('');
   };
 
@@ -130,18 +154,18 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
   };
 
   return (
-    <main className="min-h-screen bg-[#07111f] px-4 py-10 text-slate-100">
+    <main className="min-h-screen bg-themeBg px-4 py-10 text-white">
       <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         {/* Left: verification + link shortener */}
-        <section className="overflow-hidden rounded-3xl border border-cyan-300/15 bg-slate-900/80 shadow-2xl shadow-cyan-950/20">
-          <div className="border-b border-white/10 bg-gradient-to-br from-cyan-400/15 via-slate-900 to-blue-950/40 p-6 sm:p-8">
-            <div className="mb-6 flex items-center gap-3 text-cyan-200">
+        <section className="overflow-hidden rounded-3xl border border-white/10 bg-[#121212] shadow-2xl shadow-black/40">
+          <div className="border-b border-white/10 bg-gradient-to-br from-themeRed/15 via-[#121212] to-[#0a0a0a] p-6 sm:p-8">
+            <div className="mb-6 flex items-center gap-3 text-themeRed">
               <ShieldCheck className="size-5" />
               <span className="text-xs font-bold uppercase tracking-[0.2em]">Secure access</span>
             </div>
-            <p className="mb-2 text-sm text-slate-400">Unlocking batch</p>
+            <p className="mb-2 text-sm text-stone-400">Unlocking batch</p>
             <h1 className="max-w-xl text-3xl font-black tracking-tight sm:text-5xl">Verify once. Study for 48 hours.</h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-stone-300">
               Generate a verification key, complete the link-shortener step below, then return here to unlock{' '}
               <strong className="text-white">{batchTitle}</strong>.
             </p>
@@ -149,38 +173,38 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
 
           <div className="grid gap-4 p-6 sm:p-8">
             {/* Step 1: Generate key */}
-            <div className="rounded-xl border border-white/10 bg-slate-950/60 p-5">
-              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-200">
+            <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-5">
+              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-themeRed">
                 <KeyRound className="size-3" /> Step 1 — Generate your key
               </div>
               <button
                 onClick={handleGenerate}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-200"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-themeRed px-4 py-3 font-bold text-white transition hover:bg-themeRedHover"
               >
                 <KeyRound className="size-4" /> Generate verification key
               </button>
               {generatedKey && (
-                <div className="mt-4 rounded-xl border border-cyan-300/20 bg-cyan-300/10 p-4">
-                  <p className="text-xs uppercase tracking-wider text-cyan-200">Your verification key</p>
+                <div className="mt-4 rounded-xl border border-themeRed/20 bg-themeRed/10 p-4">
+                  <p className="text-xs uppercase tracking-wider text-themeRed">Your verification key</p>
                   <p className="mt-2 break-all font-mono text-xl font-bold text-white">{generatedKey}</p>
-                  <p className="mt-2 text-xs text-slate-300">Keep this key. You will enter it again after the short-link step.</p>
+                  <p className="mt-2 text-xs text-stone-300">Keep this key. You will enter it again after the short-link step.</p>
                 </div>
               )}
             </div>
 
             {/* Step 2: Link shortener */}
-            <div className="rounded-xl border border-white/10 bg-slate-950/60 p-5">
-              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-200">
+            <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-5">
+              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-themeRed">
                 <Link className="size-3" /> Step 2 — Link shortener (required)
               </div>
-              <p className="text-xs text-slate-400 mb-3">Paste any destination link and shorten it through vplink. Open the short link and complete the step.</p>
+              <p className="text-xs text-stone-400 mb-3">Paste any destination link and shorten it through vplink. Open the short link and complete the step.</p>
               <div className="space-y-2">
                 <input
                   type="text"
                   value={destinationUrl}
                   onChange={(e) => setDestinationUrl(e.target.value)}
                   placeholder="https://example.com/your-link"
-                  className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm outline-none ring-cyan-300/50 placeholder:text-slate-600 focus:ring-2"
+                  className="rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm outline-none ring-themeRed/50 placeholder:text-stone-600 focus:ring-2"
                 />
                 <button
                   onClick={handleShorten}
@@ -189,7 +213,7 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
                 >
                   {shortening ? (
                     <>
-                      <svg className="w-4 h-4 animate-spin text-slate-300" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 animate-spin text-stone-300" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path
                           className="opacity-75"
@@ -205,12 +229,12 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
                     </>
                   )}
                 </button>
-                {shortError && <p className="text-xs text-rose-400">{shortError}</p>}
+                {shortError && <p className="text-xs text-themeRed">{shortError}</p>}
                 {shortUrl && (
-                  <div className="mt-3 rounded-xl border border-cyan-300/20 bg-cyan-300/10 p-3 flex items-center gap-2">
-                    <p className="text-xs uppercase tracking-wider text-cyan-200">Your short link</p>
-                    <a href={shortUrl} target="_blank" rel="noreferrer" className="flex-1 break-all text-sm text-cyan-100 hover:underline">{shortUrl}</a>
-                    <button onClick={copyShortUrl} className="p-1.5 text-cyan-200 hover:text-white" title="Copy">
+                  <div className="mt-3 rounded-xl border border-themeRed/20 bg-themeRed/10 p-3 flex items-center gap-2">
+                    <p className="text-xs uppercase tracking-wider text-themeRed">Your short link</p>
+                    <a href={shortUrl} target="_blank" rel="noreferrer" className="flex-1 break-all text-sm text-white hover:underline">{shortUrl}</a>
+                    <button onClick={copyShortUrl} className="p-1.5 text-themeRed hover:text-white" title="Copy">
                       <Copy className="size-4" />
                     </button>
                   </div>
@@ -220,7 +244,7 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
 
             {/* Step 3: Verify key */}
             <form onSubmit={handleVerify} className="grid gap-3 border-t border-white/10 pt-5">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-themeGreen">
                 <Lock className="size-3" /> Step 3 — Unlock batch
               </div>
               <label htmlFor="verification-key" className="text-sm font-semibold">Verification key</label>
@@ -229,23 +253,23 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
                 placeholder="MS-..."
-                className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 font-mono text-sm outline-none ring-cyan-300/50 placeholder:text-slate-600 focus:ring-2"
+                className="rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-3 font-mono text-sm outline-none ring-themeRed/50 placeholder:text-stone-600 focus:ring-2"
               />
               <button className="rounded-xl border border-white/15 bg-white/10 px-4 py-3 font-semibold transition hover:bg-white/15">
                 Unlock batch
               </button>
               {expiresAtLabel && (
-                <p className="text-xs text-slate-400">Access will expire on {expiresAtLabel}.</p>
+                <p className="text-xs text-stone-400">Access will expire on {expiresAtLabel}.</p>
               )}
             </form>
 
             {message && (
-              <p className="flex items-start gap-2 text-sm text-emerald-300">
+              <p className="flex items-start gap-2 text-sm text-themeGreen">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0" /> {message}
               </p>
             )}
             {error && (
-              <p role="alert" className="flex items-start gap-2 text-sm text-rose-300">
+              <p role="alert" className="flex items-start gap-2 text-sm text-themeRed">
                 <TriangleAlert className="mt-0.5 size-4 shrink-0" /> {error}
               </p>
             )}
@@ -253,37 +277,37 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
         </section>
 
         {/* Admin bypass */}
-        <section className="rounded-xl border border-amber-300/20 bg-amber-950/10 p-4 sm:p-6 shadow-amber-900/20">
-          <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-200">
+        <section className="rounded-xl border border-themeRed/25 bg-themeRed/5 p-4 sm:p-6 shadow-black/30">
+          <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-themeRed">
             <Lock className="size-3" /> Admin bypass — no short link needed
           </div>
-          <p className="text-xs text-amber-200/80 mb-4">
+          <p className="text-xs text-stone-400 mb-4">
             Admin only. Enter the admin password to skip the link-shortener step entirely.
           </p>
           <form onSubmit={handleAdmin} className="grid gap-3">
-            <label htmlFor="admin-password" className="text-sm font-semibold text-amber-100">Admin password</label>
+            <label htmlFor="admin-password" className="text-sm font-semibold text-white">Admin password</label>
             <input
               id="admin-password"
               type="password"
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
               placeholder="•••••••"
-              className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm outline-none ring-amber-300/50 placeholder:text-slate-600 focus:ring-2"
+              className="rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm outline-none ring-themeRed/50 placeholder:text-stone-600 focus:ring-2"
             />
-            <button className="rounded-xl border border-amber-300/25 bg-amber-300/10 px-4 py-3 font-semibold text-amber-100 transition hover:bg-amber-300/15">
+            <button className="rounded-xl border border-themeRed/30 bg-themeRed/10 px-4 py-3 font-semibold text-white transition hover:bg-themeRed/15">
               Enter as admin
             </button>
           </form>
         </section>
 
         {/* Right: tutorial playing directly on the page */}
-        <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 shadow-xl sm:p-6">
+        <section className="rounded-3xl border border-white/10 bg-[#121212] p-4 shadow-xl sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-200">Need help?</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-themeRed">Need help?</p>
               <h2 className="mt-1 text-xl font-bold">How to verify</h2>
             </div>
-            <a href="https://youtube.com/shorts/JhyVwMdkt6I?si=-2jC5QExjSj6LeW" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-200 hover:text-white">
+            <a href="https://youtube.com/shorts/JhyVwMdkt6I?si=-2jC5QExjSj6LeW" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-themeRed hover:text-white">
               Open on YouTube <ExternalLink className="size-3" />
             </a>
           </div>
@@ -296,12 +320,12 @@ export function VerificationGate({ batchTitle, onVerified }: { batchTitle: strin
               allowFullScreen
             />
           </div>
-          <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 p-3">
+          <div className="mt-4 rounded-xl border border-white/10 bg-[#0a0a0a] p-3">
             <div className="flex items-start gap-2 mb-2">
-              <Play className="mt-0.5 size-4 text-cyan-200 shrink-0" />
-              <p className="text-xs text-cyan-100 font-medium">Watch before you start</p>
+              <Play className="mt-0.5 size-4 text-themeRed shrink-0" />
+              <p className="text-xs text-white font-medium">Watch before you start</p>
             </div>
-            <p className="text-sm leading-6 text-slate-400">
+            <p className="text-sm leading-6 text-stone-400">
               The tutorial plays directly on this page. It shows how to generate your key, use the link shortener,
               and enter the key to unlock any batch. Your verification is valid for <strong>48 hours</strong>.
               Never share your verification key or the admin password.

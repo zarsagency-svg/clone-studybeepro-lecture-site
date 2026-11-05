@@ -11,6 +11,7 @@ Built with **React 19 + Vite 7 + TypeScript + Tailwind CSS 4**.
 - 📄 **PDF viewer** — in-app modal for lecture notes and PDFs
 - 🗂️ **Batch content tree** — folders, files, and tests with per-type content counts (free/paid)
 - ⭐ **Wishlist** — saved locally via `localStorage`
+- 🔐 **Key-gated access** — opening any batch requires a verification key valid for 48 hours; keys are minted on the verification page, the VPLINK link shortener step redirects back and auto-unlocks, the admin password bypasses the gate, and a YouTube tutorial plays directly on the verification page
 - 🌐 **API with fallback** — primary endpoint `nt.studybeepro.site` with `asmultiverse.site` as fallback
 
 ## Project Structure
