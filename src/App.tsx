@@ -22,6 +22,7 @@ import { fetchBatchesList } from './services/studybeeApi';
 import { BatchContentView } from './components/BatchContentView';
 import { VideoPlayerView, ActiveVideoParams } from './components/VideoPlayerView';
 import { PdfViewerModal } from './components/PdfViewerModal';
+import { VerificationGate, hasActiveVerification } from './components/VerificationGate';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -75,11 +76,9 @@ export function App() {
     title: string;
     directUrl?: string;
   } | null>(null);
+  const [verified, setVerified] = useState(() => hasActiveVerification());
 
   useEffect(() => {
-    // Keep 24h verification key active so player never redirects to ad-shortener
-    localStorage.setItem('smex_key_expiry', String(Date.now() + 48 * 60 * 60 * 1000));
-
     let mounted = true;
     fetchBatchesList().then(({ all, oldOnly }) => {
       if (!mounted) return;
@@ -137,6 +136,11 @@ export function App() {
   };
 
   const handleOpenBatch = (batchId: string) => {
+    if (!hasActiveVerification()) {
+      setVerified(false);
+      setSelectedBatchId(String(batchId));
+      return;
+    }
     const id = String(batchId);
     setSelectedBatchId(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -236,6 +240,9 @@ export function App() {
   // Render Batch Course Content View if a batch is selected
   if (selectedBatchId) {
     const batchObj = allBatches.find((b) => String(b.id) === String(selectedBatchId));
+    if (!verified) {
+      return <VerificationGate batchTitle={batchObj?.title || 'this batch'} onVerified={() => setVerified(true)} />;
+    }
     return (
       <>
         <BatchContentView
