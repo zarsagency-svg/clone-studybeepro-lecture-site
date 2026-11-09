@@ -25,6 +25,11 @@ import { PdfViewerModal } from './components/PdfViewerModal';
 import { VerificationGate, hasActiveVerification } from './components/VerificationGate';
 import { TelegramInviteModal } from './components/TelegramInviteModal';
 
+// Master switch for the key verification gate.
+// Set VERIFICATION_ENABLED = true to re-enable the 48-hour key system.
+// The gate code itself is kept fully intact either way.
+const VERIFICATION_ENABLED = false;
+
 const ITEMS_PER_PAGE = 12;
 
 export function App() {
@@ -241,7 +246,7 @@ export function App() {
   // Render Batch Course Content View if a batch is selected
   if (selectedBatchId) {
     const batchObj = allBatches.find((b) => String(b.id) === String(selectedBatchId));
-    if (!verified) {
+    if (VERIFICATION_ENABLED && !verified) {
       return <VerificationGate batchTitle={batchObj?.title || 'this batch'} onVerified={() => setVerified(true)} />;
     }
     return (
