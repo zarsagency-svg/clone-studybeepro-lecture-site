@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -96,6 +96,8 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
   onOpenPdf,
 }) => {
   const [effectiveCourseId, setEffectiveCourseId] = useState<string>(courseId);
+  const effectiveCourseIdRef = useRef(courseId);
+  const folderRequestRef = useRef(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'content' | 'live'>('content');
   const [viewMode, setViewMode] = useState<'content' | 'instructions' | 'exam' | 'result'>('content');
 
@@ -135,6 +137,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
 
   const loadFolder = useCallback(
     async (folderId: string, folderTitle?: string) => {
+      const requestId = ++folderRequestRef.current;
       setContentLoading(true);
 
       setFolderHistory((prev) => {
@@ -151,25 +154,28 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
         return prev;
       });
 
-      const targetId = folderId === '0' ? courseId : effectiveCourseId;
+      const targetId = folderId === '0' ? courseId : effectiveCourseIdRef.current;
       const { items, effectiveCourseId: resolvedId } = await fetchFolderContent(
         targetId,
         String(folderId)
       );
 
+      if (requestId !== folderRequestRef.current) return;
       if (folderId === '0') {
+        effectiveCourseIdRef.current = resolvedId;
         setEffectiveCourseId(resolvedId);
         setRootFolders(items);
       }
       setFolderItems(items);
       setContentLoading(false);
     },
-    [courseId, effectiveCourseId]
+    [courseId]
   );
 
   // Load initial course overview and root folder
   useEffect(() => {
     let mounted = true;
+    effectiveCourseIdRef.current = courseId;
     setEffectiveCourseId(courseId);
     setOverviewLoading(true);
     setActiveTab('content');
@@ -185,6 +191,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
 
     return () => {
       mounted = false;
+      folderRequestRef.current++;
     };
   }, [courseId, loadFolder]);
 
