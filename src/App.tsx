@@ -6,9 +6,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronDown,
-  FolderOpen,
   History,
-  LayoutGrid,
   Loader2,
   Menu,
   Sparkles,
@@ -24,9 +22,7 @@ import { NotificationsCenter } from './components/NotificationsCenter';
 import {
   CUSTOM_COLOURS,
   PaletteChoice,
-  CardStyleChoice,
 } from './components/NotificationsDrawer';
-import { BatchFolderCard } from './components/BatchFolderCard';
 import { BatchGlassCard } from './components/BatchGlassCard';
 import {
   GlassChatBubbleIcon,
@@ -91,23 +87,6 @@ export function App() {
     setPalette(choice);
     try {
       localStorage.setItem('mindspark-palette', choice);
-    } catch {
-      // ignore storage errors
-    }
-  };
-
-  const [cardStyle, setCardStyle] = useState<CardStyleChoice>(() => {
-    try {
-      return localStorage.getItem('mindspark-platform-style') === 'card' ? 'card' : 'folder';
-    } catch {
-      return 'folder';
-    }
-  });
-
-  const chooseCardStyle = (style: CardStyleChoice) => {
-    setCardStyle(style);
-    try {
-      localStorage.setItem('mindspark-platform-style', style);
     } catch {
       // ignore storage errors
     }
@@ -566,30 +545,6 @@ export function App() {
               )}
             </div>
 
-            <div>
-              <p className="text-xs font-semibold text-[#AFC5F8] mb-2">Batch display style</p>
-              <div
-                role="group"
-                aria-label="Choose batch display style"
-                className="flex gap-1 p-1 rounded-full border border-[#AFC5F8]/30 bg-[#0F2270]/70"
-              >
-                {(['folder', 'card'] as const).map((style) => (
-                  <button
-                    key={style}
-                    type="button"
-                    aria-pressed={cardStyle === style}
-                    onClick={() => chooseCardStyle(style)}
-                    className={`flex-1 px-3 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#AFC5F8] ${
-                      cardStyle === style
-                        ? 'bg-[#6E92F2] text-[#071039]'
-                        : 'text-[#E6EDFD] hover:bg-white/10'
-                    }`}
-                  >
-                    {style === 'folder' ? 'Folders' : 'Cards'}
-                  </button>
-                ))}
-              </div>
-            </div>
           </section>
         )}
       </div>
@@ -603,8 +558,6 @@ export function App() {
         onChoosePalette={choosePalette}
         customColour={customColour}
         onChangeCustomColour={changeCustomColour}
-        cardStyle={cardStyle}
-        onChooseCardStyle={chooseCardStyle}
       />
 
       {/* ============================================================
@@ -825,46 +778,8 @@ export function App() {
               })}
             </div>
 
-            {/* Right: Quick Folder/Card Style Toggle + Glass Search Input */}
+            {/* Right: Glass Search Input */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-              {/* Quick Folders vs Cards Toggle */}
-              <div
-                role="group"
-                aria-label="Toggle Folders or Cards view"
-                className="flex items-center gap-1 p-1 rounded-2xl shrink-0"
-                style={{
-                  background:
-                    'linear-gradient(145deg, rgba(175,197,248,0.18) 0%, rgba(15,34,112,0.58) 100%)',
-                  backdropFilter: 'var(--glass-filter)',
-                  border: '1px solid rgba(175,197,248,0.32)',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => chooseCardStyle('folder')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                    cardStyle === 'folder'
-                      ? 'bg-[#6E92F2] text-[#071039]'
-                      : 'text-[#E6EDFD] hover:bg-white/10'
-                  }`}
-                >
-                  <FolderOpen className="w-3.5 h-3.5" />
-                  <span>Folders</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => chooseCardStyle('card')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                    cardStyle === 'card'
-                      ? 'bg-[#6E92F2] text-[#071039]'
-                      : 'text-[#E6EDFD] hover:bg-white/10'
-                  }`}
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Cards</span>
-                </button>
-              </div>
-
               {/* Glassmorphic Search Input with GlassSearchIcon */}
               <div
                 className="relative flex items-center gap-2 px-3 py-1.5 rounded-2xl sm:w-68"
@@ -905,7 +820,7 @@ export function App() {
           </div>
 
           {/* ============================================================
-              BATCHES 3D FOLDER / GLASS CARD GRID
+              BATCHES GLASS CARD GRID
           ============================================================ */}
           {loadingBatches ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
@@ -927,7 +842,7 @@ export function App() {
               <h3 className="text-base font-display font-bold text-[#E6EDFD]">No Batches Found</h3>
               <p className="text-xs text-[#AFC5F8] mt-1">
                 {currentTab === 'wishlist'
-                  ? 'You have not enrolled in any batches yet. Click the + button on any batch folder to save it here!'
+                  ? 'You have not enrolled in any batches yet. Click the + button on any batch card to save it here!'
                   : `No batches matched "${searchQuery}".`}
               </p>
               <button
@@ -943,27 +858,12 @@ export function App() {
             </div>
           ) : (
             <>
-              <div
-                className={
-                  cardStyle === 'folder'
-                    ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 w-full z-10'
-                    : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 w-full z-10'
-                }
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 w-full z-10">
                 {visibleBatches.map((batch, index) => {
                   const id = String(batch.id);
                   const isEnrolled = wishlist.includes(id);
 
-                  return cardStyle === 'folder' ? (
-                    <BatchFolderCard
-                      key={`${currentTab}-${id}`}
-                      batch={batch}
-                      index={index}
-                      isEnrolled={isEnrolled}
-                      onOpenBatch={handleOpenBatch}
-                      onToggleEnroll={toggleEnroll}
-                    />
-                  ) : (
+                  return (
                     <BatchGlassCard
                       key={`${currentTab}-${id}`}
                       batch={batch}

@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { NotificationItem } from '../types/notifications';
 import { X } from 'lucide-react';
 import { GlassEnvelopeNotificationIcon } from './GlassIcons3D';
-import type { PaletteChoice, CardStyleChoice } from './NotificationsDrawer';
+import type { PaletteChoice } from './NotificationsDrawer';
 
 let drawerModule: Promise<typeof import('./NotificationsDrawer')> | null = null;
 function loadDrawer() {
@@ -95,8 +95,6 @@ interface NotificationsCenterProps {
   onChoosePalette: (choice: PaletteChoice) => void;
   customColour: string;
   onChangeCustomColour: (colour: string) => void;
-  cardStyle: CardStyleChoice;
-  onChooseCardStyle: (style: CardStyleChoice) => void;
 }
 
 export const NotificationsCenter = React.memo(function NotificationsCenter({
@@ -104,8 +102,6 @@ export const NotificationsCenter = React.memo(function NotificationsCenter({
   onChoosePalette,
   customColour,
   onChangeCustomColour,
-  cardStyle,
-  onChooseCardStyle,
 }: NotificationsCenterProps) {
   const reqCounter = useRef(0);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -375,8 +371,6 @@ export const NotificationsCenter = React.memo(function NotificationsCenter({
             onChoosePalette={onChoosePalette}
             customColour={customColour}
             onChangeCustomColour={onChangeCustomColour}
-            cardStyle={cardStyle}
-            onChooseCardStyle={onChooseCardStyle}
           />
         </Suspense>
       )}

@@ -13,7 +13,6 @@ export const CUSTOM_COLOURS = [
 ] as const;
 
 export type PaletteChoice = 'blue' | 'red' | 'green' | 'custom';
-export type CardStyleChoice = 'folder' | 'card';
 
 interface NotificationsDrawerProps {
   isVisible: boolean;
@@ -28,8 +27,6 @@ interface NotificationsDrawerProps {
   onChoosePalette: (choice: PaletteChoice) => void;
   customColour: string;
   onChangeCustomColour: (colour: string) => void;
-  cardStyle: CardStyleChoice;
-  onChooseCardStyle: (style: CardStyleChoice) => void;
 }
 
 const formatTime = (ts: number) => {
@@ -59,8 +56,6 @@ export default function NotificationsDrawer({
   onChoosePalette,
   customColour,
   onChangeCustomColour,
-  cardStyle,
-  onChooseCardStyle,
 }: NotificationsDrawerProps) {
   const visible = isVisible;
   const [showThemePanel, setShowThemePanel] = useState(true);
@@ -262,30 +257,6 @@ export default function NotificationsDrawer({
                 )}
               </div>
 
-              <div>
-                <p className="text-xs font-bold text-[#AFC5F8] mb-2">Batch Display Style</p>
-                <div
-                  role="group"
-                  aria-label="Choose batch display style"
-                  className="flex gap-1 p-1 rounded-full border border-[#AFC5F8]/30 bg-[#0F2270]/70"
-                >
-                  {(['folder', 'card'] as const).map((style) => (
-                    <button
-                      key={style}
-                      type="button"
-                      aria-pressed={cardStyle === style}
-                      onClick={() => onChooseCardStyle(style)}
-                      className={`flex-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-                        cardStyle === style
-                          ? 'bg-[#6E92F2] text-[#071039]'
-                          : 'text-[#E6EDFD] hover:bg-white/10'
-                      }`}
-                    >
-                      {style === 'folder' ? '3D Folders' : 'Glass Cards'}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
 
