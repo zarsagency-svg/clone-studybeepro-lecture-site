@@ -456,6 +456,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
   const displayThumb = overview?.thumbnail || batchFallback?.thumbnail || '';
 
   return (
+    <>
     <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-12 flex flex-col relative z-10 flex-1">
       {/* Top Batch Navigation Bar (leaves room for fixed Style & Notifications buttons) */}
       <div
@@ -1115,6 +1116,16 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           </div>
         </div>
       )}
+    </main>
+
+      {/*
+        The full-screen overlays below are siblings of <main>, not children, on purpose.
+        The Red / Green / Custom palettes put `filter: hue-rotate()` on <main> (see index.css),
+        and a filtered ancestor becomes the containing block for `position: fixed`. An overlay
+        inside <main> is then laid out against the whole page instead of the screen, so its
+        card ends up off-screen. As direct children of .site-shell (like the PDF viewer and the
+        notifications drawer) they still pick up the palette through `.theme-* > .fixed`.
+      */}
 
       {/* =================== GLASSMORPHIC VIDEO ACTION MODAL =================== */}
       {videoModal && (
@@ -1124,7 +1135,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           onClick={(e) => {
             if (e.target === e.currentTarget) setVideoModal(null);
           }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] flex justify-center p-4 overflow-y-auto overscroll-contain"
           style={{
             background: 'rgba(7, 16, 57, 0.78)',
             backdropFilter: 'var(--glass-overlay-filter)',
@@ -1132,7 +1143,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           }}
         >
           <div
-            className="relative w-full max-w-md rounded-[28px] p-6 text-[#E6EDFD] overflow-hidden animate-pop-in"
+            className="relative w-full max-w-md my-auto rounded-[28px] p-6 text-[#E6EDFD] overflow-hidden animate-pop-in"
             style={{
               background:
                 'linear-gradient(160deg, rgba(46,93,230,0.35) 0%, rgba(15,34,112,0.90) 52%, rgba(7,16,57,0.97) 100%)',
@@ -1272,7 +1283,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           </h2>
         </div>
       )}
-    </main>
+    </>
   );
 };
 
