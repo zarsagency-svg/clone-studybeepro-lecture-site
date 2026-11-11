@@ -230,7 +230,7 @@ export default function NotificationsDrawer({
                         alt="Image attached to notification"
                         loading="lazy"
                         decoding="async"
-                        className="notification-image mt-3 max-h-72 w-full rounded-2xl border border-[#AFC5F8]/25 object-cover"
+                        className="notification-image mt-3 h-auto w-full rounded-2xl border border-[#AFC5F8]/25 object-contain"
                       />
                     )}
 
