@@ -1,18 +1,6 @@
-import { useState } from 'react';
-import { Heart, X, CheckCircle2, Palette, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, X, CheckCircle2 } from 'lucide-react';
 import { GlassChatBubbleIcon } from './GlassIcons3D';
 import type { NotificationItem } from '../types/notifications';
-
-export const CUSTOM_COLOURS = [
-  { name: 'Purple', value: '#a855f7' },
-  { name: 'Violet', value: '#7542df' },
-  { name: 'Pink', value: '#ed49bb' },
-  { name: 'Orange', value: '#ed7b18' },
-  { name: 'Turquoise', value: '#06b5ab' },
-  { name: 'Magenta', value: '#ce36c8' },
-] as const;
-
-export type PaletteChoice = 'blue' | 'red' | 'green' | 'custom';
 
 interface NotificationsDrawerProps {
   isVisible: boolean;
@@ -23,10 +11,6 @@ interface NotificationsDrawerProps {
   onClose: () => void;
   onRefresh: () => void;
   onToggleLike: (item: NotificationItem) => Promise<void>;
-  palette: PaletteChoice;
-  onChoosePalette: (choice: PaletteChoice) => void;
-  customColour: string;
-  onChangeCustomColour: (colour: string) => void;
 }
 
 const formatTime = (ts: number) => {
@@ -52,13 +36,8 @@ export default function NotificationsDrawer({
   onClose,
   onRefresh,
   onToggleLike,
-  palette,
-  onChoosePalette,
-  customColour,
-  onChangeCustomColour,
 }: NotificationsDrawerProps) {
   const visible = isVisible;
-  const [showThemePanel, setShowThemePanel] = useState(true);
 
   return (
     <div
@@ -128,26 +107,12 @@ export default function NotificationsDrawer({
                 </span>
               </div>
               <p className="text-[11px] text-[#AFC5F8] mt-0.5">
-                Announcements & Colour Customisation
+                Announcements
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setShowThemePanel((v) => !v)}
-              aria-label="Toggle colour customisation"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-[#E6EDFD] hover:bg-[#E6EDFD]/15 transition-colors cursor-pointer"
-              style={{
-                background: 'rgba(46,93,230,0.35)',
-                border: '1px solid rgba(230,237,253,0.35)',
-              }}
-            >
-              <Palette className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline">Theme</span>
-              {showThemePanel ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
             <button
               type="button"
               onClick={onClose}
@@ -159,107 +124,11 @@ export default function NotificationsDrawer({
           </div>
         </div>
 
-        {/* Messages & Customisation Container */}
+        {/* Messages Container */}
         <div
           id="messages-container"
           className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 no-scrollbar"
         >
-          {/* Integrated Colour Palette & Layout Customisation Card inside Notification Drawer */}
-          {showThemePanel && (
-            <div
-              className="relative rounded-[22px] p-4 overflow-hidden animate-pop-in"
-              style={{
-                background: 'var(--notification-card-background)',
-                backdropFilter: 'var(--glass-soft-filter)',
-                WebkitBackdropFilter: 'var(--glass-soft-filter)',
-                borderTop: '1.5px solid rgba(230,237,253,0.58)',
-                borderLeft: '1px solid rgba(230,237,253,0.35)',
-                borderRight: '1px solid rgba(175,197,248,0.25)',
-                borderBottom: '1.5px solid rgba(7,16,57,0.8)',
-                boxShadow: '0 14px 30px -8px rgba(7,16,57,0.7), inset 0 1.5px 2px rgba(230,237,253,0.35)',
-              }}
-            >
-              <div className="palette-switch mb-3.5">
-                <p className="text-xs font-bold text-[#E6EDFD] mb-2 flex items-center justify-between">
-                  <span>Colour Palette</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AFC5F8]">
-                    Gradient Glass
-                  </span>
-                </p>
-                <div
-                  role="group"
-                  aria-label="Choose colour palette"
-                  className="grid grid-cols-4 gap-1 p-1 rounded-2xl border border-white/30 bg-black/30"
-                >
-                  {(['blue', 'red', 'green', 'custom'] as const).map((colour) => (
-                    <button
-                      key={colour}
-                      type="button"
-                      aria-pressed={palette === colour}
-                      onClick={() => onChoosePalette(colour)}
-                      className={`flex justify-center items-center gap-1.5 px-2 py-2 rounded-full text-xs font-bold cursor-pointer transition-colors ${
-                        palette === colour ? 'bg-white text-black shadow-sm' : 'text-white hover:bg-white/10'
-                      }`}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="w-3 h-3 rounded-full shrink-0 border border-white/40"
-                        style={{
-                          backgroundColor:
-                            colour === 'blue'
-                              ? '#2E5DE6'
-                              : colour === 'red'
-                              ? '#d00018'
-                              : colour === 'green'
-                              ? '#98BF0A'
-                              : customColour,
-                        }}
-                      />
-                      <span className="truncate">
-                        {colour === 'blue'
-                          ? 'Blue'
-                          : colour === 'red'
-                          ? 'Red'
-                          : colour === 'green'
-                          ? 'Green'
-                          : 'Custom'}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                {palette === 'custom' && (
-                  <div className="mt-3 rounded-xl border border-white/25 bg-black/25 px-3 py-2.5">
-                    <p className="mb-2 text-[11px] font-semibold text-white">Choose custom shade</p>
-                    <div role="group" aria-label="Choose custom colour" className="grid grid-cols-6 gap-1.5">
-                      {CUSTOM_COLOURS.map((colour) => (
-                        <button
-                          key={colour.value}
-                          type="button"
-                          aria-pressed={customColour === colour.value}
-                          onClick={() => onChangeCustomColour(colour.value)}
-                          className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[9px] font-semibold text-white cursor-pointer ${
-                            customColour === colour.value ? 'bg-white/20' : 'hover:bg-white/10'
-                          }`}
-                        >
-                          <span
-                            aria-hidden="true"
-                            className={`h-6 w-6 rounded-full border-2 ${
-                              customColour === colour.value ? 'border-white scale-110' : 'border-white/30'
-                            }`}
-                            style={{ backgroundColor: colour.value }}
-                          />
-                          <span className="truncate max-w-full">{colour.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            </div>
-          )}
-
           {errorMsg && (
             <div
               role="alert"

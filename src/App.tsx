@@ -22,7 +22,7 @@ import { NotificationsCenter } from './components/NotificationsCenter';
 import {
   CUSTOM_COLOURS,
   PaletteChoice,
-} from './components/NotificationsDrawer';
+} from './utils/palette';
 import { BatchGlassCard } from './components/BatchGlassCard';
 import {
   GlassChatBubbleIcon,
@@ -551,14 +551,8 @@ export function App() {
 
       {/* ============================================================
           TOP-RIGHT 3D GLASSMORPHIC NOTIFICATIONS & INBOX
-          Also contains integrated colour customisation inside the drawer!
       ============================================================ */}
-      <NotificationsCenter
-        palette={palette}
-        onChoosePalette={choosePalette}
-        customColour={customColour}
-        onChangeCustomColour={changeCustomColour}
-      />
+      <NotificationsCenter />
 
       {/* ============================================================
           VIEW ROUTER: BATCH CONTENT VIEW vs MAIN BATCH HOMEPAGE

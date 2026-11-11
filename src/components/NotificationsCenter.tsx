@@ -2,7 +2,6 @@ import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { NotificationItem } from '../types/notifications';
 import { X } from 'lucide-react';
 import { GlassEnvelopeNotificationIcon } from './GlassIcons3D';
-import type { PaletteChoice } from './NotificationsDrawer';
 
 let drawerModule: Promise<typeof import('./NotificationsDrawer')> | null = null;
 function loadDrawer() {
@@ -90,19 +89,7 @@ async function callSupabaseRpc(fnName: string, payload: Record<string, unknown>)
   return res.json();
 }
 
-interface NotificationsCenterProps {
-  palette: PaletteChoice;
-  onChoosePalette: (choice: PaletteChoice) => void;
-  customColour: string;
-  onChangeCustomColour: (colour: string) => void;
-}
-
-export const NotificationsCenter = React.memo(function NotificationsCenter({
-  palette,
-  onChoosePalette,
-  customColour,
-  onChangeCustomColour,
-}: NotificationsCenterProps) {
+export const NotificationsCenter = React.memo(function NotificationsCenter() {
   const reqCounter = useRef(0);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [visitorId] = useState<string | null>(getOrCreateVisitorId);
@@ -367,10 +354,6 @@ export const NotificationsCenter = React.memo(function NotificationsCenter({
             onClose={toggleDrawer}
             onRefresh={() => loadNotifications(true)}
             onToggleLike={handleToggleLike}
-            palette={palette}
-            onChoosePalette={onChoosePalette}
-            customColour={customColour}
-            onChangeCustomColour={onChangeCustomColour}
           />
         </Suspense>
       )}
