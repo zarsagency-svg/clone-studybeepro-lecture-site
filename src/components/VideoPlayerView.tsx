@@ -307,6 +307,12 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
         }
       }
 
+      if (resolved.type === 'mpd') {
+        setErrorMsg('This protected stream could not be played. Check your access or try again later.');
+        setLoading(false);
+        return;
+      }
+
       // 4. Native MP4 Direct
       const targetUrl = resolved.streamUrl || resolved.fallbackMp4Url;
       if (targetUrl) {
@@ -619,6 +625,11 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
               onWaiting={() => setBuffering(true)}
               onPlaying={() => setBuffering(false)}
               onCanPlay={() => setBuffering(false)}
+              onError={() => {
+                setBuffering(false);
+                setLoading(false);
+                setErrorMsg('The video could not be played. Please check your access and try again.');
+              }}
             />
 
             {/* Buffering Spinner */}
@@ -800,8 +811,12 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                     />
                     <div className="w-full h-1.5 bg-white/20 rounded-full relative overflow-hidden">
                       <div
-                        className="absolute top-0 left-0 bottom-0 bg-themeRed rounded-full shadow-[0_0_10px_#FACC15]"
-                        style={{ width: `${progressPct}%` }}
+                        className="absolute top-0 left-0 bottom-0 rounded-full"
+                        style={{
+                          width: `${progressPct}%`,
+                          background: 'linear-gradient(90deg, #2E5DE6 0%, #6E92F2 100%)',
+                          boxShadow: '0 0 12px rgba(110,146,242,0.9)',
+                        }}
                       />
                     </div>
                   </div>
@@ -815,7 +830,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   <div className="flex items-center gap-4 sm:gap-6">
                     <button
                       onClick={(e) => skipSeconds(-10, e)}
-                      className="text-white hover:text-themeRed transition-colors"
+                      className="text-white hover:text-[#AFC5F8] transition-colors cursor-pointer"
                       title="Rewind 10s"
                     >
                       <RotateCcw className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -823,7 +838,12 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
                     <button
                       onClick={togglePlay}
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-themeRed text-black flex items-center justify-center hover:scale-105 transition-all shadow-[0_0_20px_rgba(250,204,21,0.4)]"
+                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full text-[#E6EDFD] flex items-center justify-center hover:scale-105 transition-all cursor-pointer"
+                      style={{
+                        background: 'linear-gradient(135deg, #6E92F2 0%, #2E5DE6 100%)',
+                        border: '1.5px solid rgba(230,237,253,0.65)',
+                        boxShadow: '0 0 24px rgba(46,93,230,0.75)',
+                      }}
                     >
                       {isPlaying ? (
                         <Pause className="w-6 h-6 sm:w-7 sm:h-7 fill-current" />

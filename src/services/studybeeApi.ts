@@ -357,6 +357,20 @@ export async function resolveVideoPlayback(params: {
     }
   }
 
+  // Use explicit, directly playable URLs provided for this lecture.
+  if (params.directFileUrl && /^https?:\/\//i.test(params.directFileUrl)) {
+    const url = params.directFileUrl;
+    if (/\.(m3u8|mp4|webm)(?:[?#]|$)/i.test(url)) {
+      return {
+        type: /\.m3u8(?:[?#]|$)/i.test(url) ? 'hls' : 'mp4',
+        streamUrl: url,
+        title: params.title,
+        downloadQualities,
+        fallbackMp4Url: bestMp4,
+      };
+    }
+  }
+
   // Priority 2: VideoCrypt Direct (/vc/{vdc_id})
   if (params.vdcId && params.vdcId.trim() !== '' && params.vdcId !== 'null') {
     try {
@@ -533,33 +547,7 @@ export async function resolveVideoPlayback(params: {
     }
   }
 
-  // Priority 4: Fallback to a verified real StudyBee / NextToppers HLS lecture stream so playback always works
-  const fallbackStream =
-    'https://dbil3go8szhu6.cloudfront.net/file_library/videos/channel_vod_non_drm_hls/4883161/179049400938441304992/179049400938441304992_1304992.m3u8';
-  return {
-    type: 'hls',
-    streamUrl: fallbackStream,
-    title: params.title || 'StudyBee Lecture Stream',
-    downloadQualities: [
-      {
-        title: '720',
-        url: 'https://dylnd2lqy6eys.cloudfront.net/file_library/videos/download/4883161/1790494567_6143953005310706/179049400938441304992_720',
-      },
-      {
-        title: '480',
-        url: 'https://dylnd2lqy6eys.cloudfront.net/file_library/videos/download/4883161/1790494567_6143953005310706/179049400938441304992_480',
-      },
-      {
-        title: '360',
-        url: 'https://dylnd2lqy6eys.cloudfront.net/file_library/videos/download/4883161/1790494567_6143953005310706/179049400938441304992_360',
-      },
-      {
-        title: '240',
-        url: 'https://dylnd2lqy6eys.cloudfront.net/file_library/videos/download/4883161/1790494567_6143953005310706/179049400938441304992_240',
-      },
-    ],
-    derivedHlsUrl: fallbackStream,
-  };
+  throw new Error('This lecture is currently unavailable. Please try again later.');
 }
 
 export function generateFallbackTestQuestions(testTitle: string): {
