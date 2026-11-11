@@ -35,7 +35,6 @@ import {
   GlassMedalIcon,
   GlassPlayIcon,
   GlassShieldIcon,
-  GlassStreamIcon,
 } from './GlassIcons3D';
 
 interface BatchContentViewProps {
@@ -98,7 +97,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
   const [effectiveCourseId, setEffectiveCourseId] = useState<string>(courseId);
   const effectiveCourseIdRef = useRef(courseId);
   const folderRequestRef = useRef(0);
-  const [activeTab, setActiveTab] = useState<'overview' | 'content' | 'live'>('content');
+  const [activeTab, setActiveTab] = useState<'overview' | 'content'>('content');
   const [viewMode, setViewMode] = useState<'content' | 'instructions' | 'exam' | 'result'>('content');
 
   // Overview state
@@ -112,10 +111,6 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
   const [folderHistory, setFolderHistory] = useState<FolderBreadcrumb[]>([
     { id: '0', title: 'Root' },
   ]);
-
-  // Live & Marathon Sessions state
-  const [liveItems, setLiveItems] = useState<CourseContentItem[]>([]);
-  const [liveLoading, setLiveLoading] = useState(false);
 
   // Video Action Modal (Watch Now vs Download)
   const [videoModal, setVideoModal] = useState<VideoActionModalState | null>(null);
@@ -194,58 +189,6 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
       folderRequestRef.current++;
     };
   }, [courseId, loadFolder]);
-
-  // Populate Live tab by scanning root & top subject folders for recent videos
-  useEffect(() => {
-    if (activeTab !== 'live') return;
-    let mounted = true;
-    setLiveLoading(true);
-
-    async function loadRecentLectures() {
-      const collected: CourseContentItem[] = [];
-      const directVids = rootFolders.filter(
-        (i) => i.type === 'file' && (i.data?.file_type === 2 || (i.data?.video_type || 0) > 0)
-      );
-      collected.push(...directVids);
-
-      const topFolders = rootFolders.filter((i) => i.type === 'folder').slice(0, 3);
-      for (const tf of topFolders) {
-        try {
-          const sub = await fetchFolderContent(effectiveCourseId, String(tf.entity_id));
-          const subVids = sub.items.filter(
-            (i) => i.type === 'file' && (i.data?.file_type === 2 || (i.data?.video_type || 0) > 0)
-          );
-          collected.push(...subVids);
-
-          if (subVids.length === 0) {
-            const innerFolder = sub.items.find((i) => i.type === 'folder');
-            if (innerFolder) {
-              const deep = await fetchFolderContent(
-                effectiveCourseId,
-                String(innerFolder.entity_id)
-              );
-              const deepVids = deep.items.filter(
-                (i) =>
-                  i.type === 'file' && (i.data?.file_type === 2 || (i.data?.video_type || 0) > 0)
-              );
-              collected.push(...deepVids.slice(0, 4));
-            }
-          }
-        } catch {
-          // ignore
-        }
-      }
-
-      if (!mounted) return;
-      setLiveItems(collected.slice(0, 12));
-      setLiveLoading(false);
-    }
-
-    loadRecentLectures();
-    return () => {
-      mounted = false;
-    };
-  }, [activeTab, rootFolders, effectiveCourseId]);
 
   // Exam timer countdown
   useEffect(() => {
@@ -673,7 +616,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           </div>
 
           {/* 3D Glassmorphic Navigation Tabs Dock */}
-          <div className="flex flex-wrap items-center gap-2.5 mb-6">
+          <div className="grid grid-cols-2 gap-2.5 mb-6">
             {[
               {
                 key: 'content' as const,
@@ -685,11 +628,6 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 label: 'Overview',
                 icon: <GlassDocsIcon className="w-7 h-7" />,
               },
-              {
-                key: 'live' as const,
-                label: 'Live',
-                icon: <GlassStreamIcon className="w-7 h-7" />,
-              },
             ].map((tab) => {
               const isActive = activeTab === tab.key;
               return (
@@ -697,7 +635,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                   key={tab.key}
                   type="button"
                   onClick={() => setActiveTab(tab.key)}
-                  className="flex items-center gap-2.5 px-4 py-2 rounded-2xl text-xs sm:text-sm font-display font-bold transition-ui cursor-pointer hover:-translate-y-0.5"
+                  className="flex min-w-0 justify-center items-center gap-2 px-2 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm font-display font-bold transition-ui cursor-pointer hover:-translate-y-0.5"
                   style={{
                     background: isActive
                       ? 'linear-gradient(135deg, rgba(110,146,242,0.45) 0%, rgba(46,93,230,0.72) 100%)'
@@ -924,76 +862,6 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
             </div>
           )}
 
-          {/* =================== TAB 3: LIVE CLASSES =================== */}
-          {activeTab === 'live' && (
-            <div className="animate-pop-in space-y-6">
-              <div className="glass-surface rounded-2xl p-4 sm:p-5 flex items-center justify-between">
-                <div className="flex items-center gap-3.5">
-                  <GlassStreamIcon className="w-11 h-11 shrink-0" />
-                  <div>
-                    <h3 className="text-[#E6EDFD] font-display font-bold text-base">
-                      Live &amp; Marathon Recorded Sessions
-                    </h3>
-                    <p className="text-xs text-[#AFC5F8] mt-0.5">
-                      Watch recent live streams, doubt classes, and marathon sessions from this batch.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {liveLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-3">
-                  <Loader2 className="w-9 h-9 text-[#6E92F2] animate-spin" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-[#AFC5F8]">
-                    Fetching recent live &amp; recorded classes...
-                  </span>
-                </div>
-              ) : liveItems.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                  {liveItems.map((item, idx) => (
-                    <ContentGridCard
-                      key={`live-${item.entity_id}-${idx}`}
-                      item={item}
-                      index={idx}
-                      onFolderClick={(fId, fTitle) => {
-                        setActiveTab('content');
-                        loadFolder(fId, fTitle);
-                      }}
-                      onVideoClick={handleVideoCardClick}
-                      onPdfClick={(pdfItem) =>
-                        onOpenPdf(
-                          effectiveCourseId,
-                          pdfItem.entity_id,
-                          pdfItem.title,
-                          pdfItem.data?.file_url
-                        )
-                      }
-                      onTestClick={openTestInstructions}
-                      formatDuration={formatDuration}
-                      formatDate={formatDate}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="glass-surface rounded-[28px] py-16 px-6 text-center max-w-md mx-auto">
-                  <GlassStreamIcon className="w-14 h-14 mx-auto mb-3" />
-                  <h3 className="text-lg font-display font-bold text-[#E6EDFD]">
-                    No Active Live Broadcast
-                  </h3>
-                  <p className="text-xs text-[#AFC5F8] mt-1 mb-4">
-                    All completed live classes are organized inside the subject folders.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('content')}
-                    className="px-5 py-2 rounded-full text-xs font-bold text-[#E6EDFD] bg-[#2E5DE6] hover:bg-[#1A3BB0] transition-colors cursor-pointer"
-                  >
-                    Open Subject Folders
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
 
