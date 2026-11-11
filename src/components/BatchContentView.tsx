@@ -646,43 +646,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                   {displayTitle}
                 </h1>
 
-                <div className="flex flex-wrap items-center gap-3 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('content')}
-                    className="px-4 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider text-[#E6EDFD] flex items-center gap-2 transition-ui hover:-translate-y-0.5 cursor-pointer"
-                    style={{
-                      background: 'linear-gradient(135deg, #6E92F2 0%, #2E5DE6 100%)',
-                      border: '1px solid rgba(230,237,253,0.6)',
-                      boxShadow: '0 8px 20px rgba(46,93,230,0.5)',
-                    }}
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Folders &amp; Lectures</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('live')}
-                    className="px-4 py-2.5 rounded-2xl text-xs font-bold text-[#E6EDFD] flex items-center gap-2 transition-ui hover:bg-white/15 cursor-pointer"
-                    style={{
-                      background: 'rgba(15, 34, 112, 0.65)',
-                      border: '1px solid rgba(175, 197, 248, 0.4)',
-                    }}
-                  >
-                    <span>Live &amp; Marathon Sessions</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('overview')}
-                    className="px-4 py-2.5 rounded-2xl text-xs font-bold text-[#AFC5F8] hover:text-[#E6EDFD] flex items-center gap-1.5 transition-ui hover:bg-white/10 cursor-pointer"
-                    style={{
-                      background: 'rgba(7, 16, 57, 0.45)',
-                      border: '1px solid rgba(175, 197, 248, 0.28)',
-                    }}
-                  >
-                    <span>Syllabus &amp; Details</span>
-                  </button>
-                </div>
+
               </div>
 
               {displayThumb && (
@@ -713,18 +677,17 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
             {[
               {
                 key: 'content' as const,
-                label: 'Subject Folders & Content',
-                count: rootFolders.length,
+                label: 'Subject',
                 icon: <GlassFolderIcon className="w-7 h-7" />,
               },
               {
                 key: 'overview' as const,
-                label: 'Overview & Syllabus',
+                label: 'Overview',
                 icon: <GlassDocsIcon className="w-7 h-7" />,
               },
               {
                 key: 'live' as const,
-                label: 'Live & Marathon Classes',
+                label: 'Live',
                 icon: <GlassStreamIcon className="w-7 h-7" />,
               },
             ].map((tab) => {
@@ -750,16 +713,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                 >
                   {tab.icon}
                   <span>{tab.label}</span>
-                  {typeof tab.count === 'number' && tab.count > 0 && (
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[10px] font-bold text-[#071039]"
-                      style={{
-                        background: 'linear-gradient(135deg, #E6EDFD 0%, #AFC5F8 100%)',
-                      }}
-                    >
-                      {tab.count}
-                    </span>
-                  )}
+
                 </button>
               );
             })}
