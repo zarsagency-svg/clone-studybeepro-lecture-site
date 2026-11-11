@@ -234,6 +234,22 @@ export const NotificationsCenter = React.memo(function NotificationsCenter() {
     }
   };
 
+  const handleSendMessage = async (name: string, message: string) => {
+    if (!visitorId) throw new Error('Please enable browser storage to send a message.');
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/lecture_submit_visitor_message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ p_visitor_id: visitorId, p_sender_name: name.trim() || null, p_message: message.trim() }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      if (typeof body?.message === 'string' && body.message.includes('wait one minute')) {
+        throw new Error('Please wait one minute before sending another message.');
+      }
+      throw new Error('Could not send your message. Please try again.');
+    }
+  };
+
   const latestMsg = messages[0];
 
   return (
@@ -354,6 +370,7 @@ export const NotificationsCenter = React.memo(function NotificationsCenter() {
             onClose={toggleDrawer}
             onRefresh={() => loadNotifications(true)}
             onToggleLike={handleToggleLike}
+            onSendMessage={handleSendMessage}
           />
         </Suspense>
       )}

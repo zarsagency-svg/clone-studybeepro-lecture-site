@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from 'react';
 import { Heart, X, CheckCircle2 } from 'lucide-react';
 import { GlassChatBubbleIcon } from './GlassIcons3D';
 import type { NotificationItem } from '../types/notifications';
@@ -11,6 +12,7 @@ interface NotificationsDrawerProps {
   onClose: () => void;
   onRefresh: () => void;
   onToggleLike: (item: NotificationItem) => Promise<void>;
+  onSendMessage: (name: string, message: string) => Promise<void>;
 }
 
 const formatTime = (ts: number) => {
@@ -36,8 +38,30 @@ export default function NotificationsDrawer({
   onClose,
   onRefresh,
   onToggleLike,
+  onSendMessage,
 }: NotificationsDrawerProps) {
   const visible = isVisible;
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [senderName, setSenderName] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sendStatus, setSendStatus] = useState('');
+
+  const submitMessage = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (sending || !message.trim()) return;
+    setSending(true);
+    setSendStatus('');
+    try {
+      await onSendMessage(senderName, message);
+      setMessage('');
+      setSendStatus('Message sent to the admin.');
+    } catch (error) {
+      setSendStatus(error instanceof Error ? error.message : 'Could not send your message. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div
@@ -129,6 +153,28 @@ export default function NotificationsDrawer({
           id="messages-container"
           className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 no-scrollbar"
         >
+          <section className="rounded-2xl border border-[#AFC5F8]/30 bg-[#0F2270]/70 p-4 text-[#E6EDFD]">
+            <button type="button" aria-expanded={composeOpen} onClick={() => setComposeOpen(!composeOpen)} className="w-full text-left text-sm font-bold cursor-pointer">
+              {composeOpen ? '−' : '+'} Send a message to the admin
+            </button>
+            {composeOpen && (
+              <form onSubmit={submitMessage} className="mt-3 space-y-3">
+                <p className="text-xs text-[#AFC5F8]">Your message will be stored for the admin to read. Please don’t include sensitive information.</p>
+                <label className="block text-xs font-semibold">Name (optional)
+                  <input value={senderName} onChange={(event) => setSenderName(event.target.value)} maxLength={80} autoComplete="name" className="mt-1 w-full rounded-xl border border-[#AFC5F8]/40 bg-[#071039]/70 p-2.5 text-sm text-white" />
+                </label>
+                <label className="block text-xs font-semibold">Message
+                  <textarea value={message} onChange={(event) => setMessage(event.target.value)} maxLength={2000} required rows={4} className="mt-1 w-full resize-y rounded-xl border border-[#AFC5F8]/40 bg-[#071039]/70 p-2.5 text-sm text-white" />
+                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-[#AFC5F8]">{message.length}/2000</span>
+                  <button type="submit" disabled={sending || !message.trim()} className="rounded-xl bg-[#2E5DE6] px-4 py-2 text-xs font-bold disabled:opacity-50 cursor-pointer">{sending ? 'Sending…' : 'Send message'}</button>
+                </div>
+                {sendStatus && <p role="status" aria-live="polite" className="text-xs text-[#E6EDFD]">{sendStatus}</p>}
+              </form>
+            )}
+          </section>
+
           {errorMsg && (
             <div
               role="alert"
