@@ -292,7 +292,9 @@ export const NotificationsCenter = React.memo(function NotificationsCenter() {
           onFocus={warmDrawer}
           aria-label="Admin Notifications & Theme Customiser"
           aria-expanded={isOpen}
-          className="group relative flex items-center gap-2.5 p-1.5 sm:pr-4 rounded-2xl transition-ui duration-200 hover:-translate-y-0.5 hover:scale-[1.03] active:scale-95 cursor-pointer"
+          className={`group relative flex items-center gap-2.5 p-1.5 sm:pr-4 rounded-2xl transition-ui duration-200 hover:-translate-y-0.5 hover:scale-[1.03] active:scale-95 cursor-pointer ${
+            unreadCount > 0 ? 'animate-bell-ring' : ''
+          }`}
           style={{
             background:
               'linear-gradient(145deg, rgba(175,197,248,0.28) 0%, rgba(46,93,230,0.32) 55%, rgba(15,34,112,0.75) 100%)',
@@ -320,7 +322,7 @@ export const NotificationsCenter = React.memo(function NotificationsCenter() {
           {unreadCount > 0 && (
             <span
               id="unread-badge"
-              className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-[11px] font-bold text-[#071039] px-1.5"
+              className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-[11px] font-bold text-[#071039] px-1.5 animate-badge-pop"
               style={{
                 background: 'linear-gradient(135deg, #E6EDFD 0%, #AFC5F8 50%, #6E92F2 100%)',
                 boxShadow: '0 0 14px rgba(110,146,242,0.95), 0 2px 6px rgba(7,16,57,0.8)',
