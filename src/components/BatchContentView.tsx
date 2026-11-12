@@ -97,6 +97,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
   const [effectiveCourseId, setEffectiveCourseId] = useState<string>(courseId);
   const effectiveCourseIdRef = useRef(courseId);
   const folderRequestRef = useRef(0);
+  const contentBrowserRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'content'>('content');
   const [viewMode, setViewMode] = useState<'content' | 'instructions' | 'exam' | 'result'>('content');
 
@@ -130,10 +131,26 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [examResultSummary, setExamResultSummary] = useState<ExamResultSummary | null>(null);
 
+  const scrollToContentBrowser = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      const el = contentBrowserRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      // If the folder/lecture browser is scrolled above the viewport or too far down on mobile, bring it into view
+      if (rect.top < 12 || rect.top > window.innerHeight * 0.45) {
+        const targetTop = Math.max(0, window.scrollY + rect.top - 16);
+        window.scrollTo({ top: targetTop, behavior: "smooth" });
+      }
+    });
+  }, []);
+
   const loadFolder = useCallback(
-    async (folderId: string, folderTitle?: string) => {
+    async (folderId: string, folderTitle?: string, shouldScroll = false) => {
       const requestId = ++folderRequestRef.current;
       setContentLoading(true);
+      if (shouldScroll) {
+        scrollToContentBrowser();
+      }
 
       setFolderHistory((prev) => {
         if (folderId === '0') {
@@ -163,8 +180,11 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
       }
       setFolderItems(items);
       setContentLoading(false);
+      if (shouldScroll) {
+        scrollToContentBrowser();
+      }
     },
-    [courseId]
+    [courseId, scrollToContentBrowser]
   );
 
   // Load initial course overview and root folder
@@ -189,6 +209,23 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
       folderRequestRef.current++;
     };
   }, [courseId, loadFolder]);
+
+  // Lock background page scroll on mobile/desktop when lecture modal or submit modal is open
+  useEffect(() => {
+    if (!videoModal && !showSubmitModal) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setVideoModal(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [videoModal, showSubmitModal]);
 
   // Exam timer countdown
   useEffect(() => {
@@ -456,6 +493,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
   const displayThumb = overview?.thumbnail || batchFallback?.thumbnail || '';
 
   return (
+    <>
     <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-12 flex flex-col relative z-10 flex-1">
       {/* Top Batch Navigation Bar (leaves room for fixed Style & Notifications buttons) */}
       <div
@@ -533,7 +571,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
       {viewMode === 'content' && (
         <div className="w-full flex flex-col flex-1">
           {/* Dual-Layer 3D Glass Course Hero Banner */}
-          <div className="relative pt-3 mb-7 animate-pop-in">
+          <div className="relative pt-2.5 sm:pt-3 mb-4 sm:mb-7 animate-pop-in">
             {/* Tilted Vivid Ultramarine Back Plate */}
             <div
               className="pointer-events-none absolute top-0 inset-x-8 h-12 rounded-t-3xl"
@@ -546,7 +584,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
             />
 
             <div
-              className="relative z-10 rounded-[28px] p-5 sm:p-7 flex flex-col-reverse md:flex-row items-center justify-between gap-6 overflow-hidden"
+              className="relative z-10 rounded-[24px] sm:rounded-[28px] p-4 sm:p-7 flex flex-col-reverse md:flex-row items-center justify-between gap-3.5 sm:gap-6 overflow-hidden"
               style={{
                 background: 'var(--community-background)',
                 backdropFilter: 'var(--glass-filter)',
@@ -593,9 +631,13 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
               </div>
 
               {displayThumb && (
-                <div className="w-full md:w-auto shrink-0 flex justify-center md:justify-end relative z-10">
+                <div
+                  className={`${
+                    folderHistory.length > 1 ? "hidden md:flex" : "flex"
+                  } w-full md:w-auto shrink-0 justify-center md:justify-end relative z-10`}
+                >
                   <div
-                    className="w-full max-w-[290px] rounded-[20px] p-1.5 transition-transform duration-300 hover:scale-[1.03]"
+                    className="w-full max-w-[200px] sm:max-w-[250px] md:max-w-[290px] rounded-[20px] p-1.5 transition-transform duration-300 hover:scale-[1.03]"
                     style={{
                       transform: 'rotate(1.6deg)',
                       background:
@@ -616,7 +658,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           </div>
 
           {/* 3D Glassmorphic Navigation Tabs Dock */}
-          <div className="grid grid-cols-2 gap-2.5 mb-6">
+          <div ref={contentBrowserRef} className="grid grid-cols-2 gap-2.5 mb-4 sm:mb-6 scroll-mt-4">
             {[
               {
                 key: 'content' as const,
@@ -718,7 +760,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                         index={idx}
                         onFolderClick={(fId, fTitle) => {
                           setActiveTab('content');
-                          loadFolder(fId, fTitle);
+                          loadFolder(fId, fTitle, true);
                         }}
                         onVideoClick={handleVideoCardClick}
                         onPdfClick={(pdfItem) =>
@@ -781,7 +823,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                           type="button"
                           disabled={isLast}
                           onClick={() => {
-                            if (!isLast) loadFolder(folder.id, folder.title);
+                            if (!isLast) loadFolder(folder.id, folder.title, true);
                           }}
                           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-colors ${
                             isLast
@@ -822,7 +864,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                       key={`${item.type}-${item.entity_id}-${index}`}
                       item={item}
                       index={index}
-                      onFolderClick={(fId, fTitle) => loadFolder(fId, fTitle)}
+                      onFolderClick={(fId, fTitle) => loadFolder(fId, fTitle, true)}
                       onVideoClick={handleVideoCardClick}
                       onPdfClick={(pdfItem) =>
                         onOpenPdf(
@@ -850,7 +892,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                       type="button"
                       onClick={() => {
                         const prev = folderHistory[folderHistory.length - 2];
-                        if (prev) loadFolder(prev.id, prev.title);
+                        if (prev) loadFolder(prev.id, prev.title, true);
                       }}
                       className="mt-4 px-4 py-2 rounded-full text-xs font-bold text-[#E6EDFD] bg-[#2E5DE6] hover:bg-[#1A3BB0] transition-colors cursor-pointer"
                     >
@@ -1116,6 +1158,8 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
         </div>
       )}
 
+    </main>
+
       {/* =================== GLASSMORPHIC VIDEO ACTION MODAL =================== */}
       {videoModal && (
         <div
@@ -1124,7 +1168,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           onClick={(e) => {
             if (e.target === e.currentTarget) setVideoModal(null);
           }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 w-full h-[100dvh] z-[100] flex items-center justify-center p-4 overflow-y-auto overscroll-contain"
           style={{
             background: 'rgba(7, 16, 57, 0.78)',
             backdropFilter: 'var(--glass-overlay-filter)',
@@ -1132,7 +1176,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
           }}
         >
           <div
-            className="relative w-full max-w-md rounded-[28px] p-6 text-[#E6EDFD] overflow-hidden animate-pop-in"
+            className="relative w-full max-w-md my-auto rounded-[28px] p-5 sm:p-6 text-[#E6EDFD] overflow-hidden animate-pop-in"
             style={{
               background:
                 'linear-gradient(160deg, rgba(46,93,230,0.35) 0%, rgba(15,34,112,0.90) 52%, rgba(7,16,57,0.97) 100%)',
@@ -1234,7 +1278,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
 
       {/* =================== SUBMIT TEST MODAL =================== */}
       {showSubmitModal && (
-        <div className="fixed inset-0 z-[100] bg-[#071039]/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 w-full h-[100dvh] z-[100] bg-[#071039]/80 backdrop-blur-md flex items-center justify-center p-4 overscroll-contain">
           <div className="glass-surface rounded-[28px] p-6 max-w-sm w-full text-center animate-pop-in">
             <GlassShieldIcon className="w-12 h-12 mx-auto mb-3" />
             <h3 className="text-xl font-display font-bold text-[#E6EDFD] mb-2">
@@ -1265,14 +1309,14 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
 
       {/* =================== EXAM LOADING MODAL =================== */}
       {examLoadingText && (
-        <div className="fixed inset-0 z-[110] bg-[#071039]/90 backdrop-blur-md flex items-center justify-center flex-col gap-3">
+        <div className="fixed inset-0 w-full h-[100dvh] z-[110] bg-[#071039]/90 backdrop-blur-md flex items-center justify-center flex-col gap-3">
           <Loader2 className="w-9 h-9 text-[#6E92F2] animate-spin" />
           <h2 className="text-sm font-display font-bold text-[#E6EDFD] tracking-wide">
             {examLoadingText}
           </h2>
         </div>
       )}
-    </main>
+    </>
   );
 };
 
