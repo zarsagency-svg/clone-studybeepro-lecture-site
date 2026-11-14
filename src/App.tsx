@@ -17,6 +17,7 @@ import { fetchBatchesList } from './services/studybeeApi';
 import { BatchContentView } from './components/BatchContentView';
 import { VideoPlayerView, ActiveVideoParams } from './components/VideoPlayerView';
 import { PdfViewerModal } from './components/PdfViewerModal';
+import { trackVisit } from './utils/trackVisit';
 import { VerificationGate, hasActiveVerification } from './components/VerificationGate';
 import { NotificationsCenter } from './components/NotificationsCenter';
 import {
@@ -175,6 +176,16 @@ export function App() {
     directUrl?: string;
   } | null>(null);
   const [verified, setVerified] = useState(() => hasActiveVerification());
+
+  // Anonymous traffic counter: one count per device per day, plus which batch was opened.
+  const allBatchesRef = useRef(allBatches);
+  allBatchesRef.current = allBatches;
+  useEffect(() => {
+    const batch = selectedBatchId
+      ? allBatchesRef.current.find((b) => String(b.id) === String(selectedBatchId))
+      : null;
+    trackVisit(selectedBatchId, batch?.title);
+  }, [selectedBatchId]);
 
   useEffect(() => {
     let mounted = true;
