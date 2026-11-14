@@ -99,13 +99,29 @@ export interface ResolvedVideoSource {
   pdfUrl?: string | null;
 }
 
+const REQUEST_TIMEOUT_MS = 15000;
+
+/** fetch() that gives up after a timeout instead of hanging forever on a slow network. */
+async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
+  if (options.signal || typeof AbortController === 'undefined') {
+    return fetch(url, options);
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function fetchWithFallback(queryParams: string, options: RequestInit = {}): Promise<any> {
   const cleanQuery = queryParams.startsWith('?') ? queryParams : `?${queryParams}`;
   const primaryUrl = `${PRIMARY_API}${cleanQuery}`;
   const fallbackUrl = `${FALLBACK_API}/${cleanQuery}`;
 
   try {
-    const res = await fetch(primaryUrl, options);
+    const res = await fetchWithTimeout(primaryUrl, options);
     if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
     const json = await res.json();
     if (
@@ -119,7 +135,7 @@ export async function fetchWithFallback(queryParams: string, options: RequestIni
     return json;
   } catch (primaryErr) {
     console.warn(`[Fallback] Primary API failed (${primaryUrl}), trying fallback (${fallbackUrl}).`, primaryErr);
-    const fallbackRes = await fetch(fallbackUrl, options);
+    const fallbackRes = await fetchWithTimeout(fallbackUrl, options);
     if (!fallbackRes.ok) {
       throw new Error(`Fallback HTTP Error ${fallbackRes.status}`);
     }
@@ -182,43 +198,120 @@ export async function fetchCourseOverview(courseId: string): Promise<CourseOverv
   return null;
 }
 
+export interface FolderContentResult {
+  items: CourseContentItem[];
+  effectiveCourseId: string;
+  /** True when the servers could not be reached, so "no items" does NOT mean the folder is empty. */
+  failed?: boolean;
+  /** True when the list comes from the copy saved on this device because the servers failed. */
+  fromCache?: boolean;
+}
+
+const FOLDER_CACHE_PREFIX = 'ms_folder_cache_v1:';
+
+function readFolderCache(courseId: string, folderId: string): FolderContentResult | null {
+  try {
+    const raw = localStorage.getItem(`${FOLDER_CACHE_PREFIX}${courseId}:${folderId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.items) && parsed.items.length > 0) {
+      return {
+        items: parsed.items,
+        effectiveCourseId: String(parsed.effectiveCourseId || courseId),
+        fromCache: true,
+      };
+    }
+  } catch {
+    // ignore - storage unavailable or corrupted entry
+  }
+  return null;
+}
+
+function writeFolderCache(courseId: string, folderId: string, result: FolderContentResult): void {
+  const key = `${FOLDER_CACHE_PREFIX}${courseId}:${folderId}`;
+  const value = JSON.stringify({
+    t: Date.now(),
+    items: result.items,
+    effectiveCourseId: result.effectiveCourseId,
+  });
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage full: drop our older saved folders and try once more.
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith(FOLDER_CACHE_PREFIX))
+        .forEach((k) => localStorage.removeItem(k));
+      localStorage.setItem(key, value);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * One attempt at loading a folder.
+ * Returns the items, or [] when the servers answered that there is nothing there.
+ * Throws when the servers could not be reached / answered with garbage.
+ */
+async function requestFolderItems(courseId: string, folderId: string): Promise<CourseContentItem[]> {
+  const json = await fetchWithFallback(`?content=${courseId}&folder=${folderId}&_t=${Date.now()}`);
+  if (json?.success && Array.isArray(json.data)) {
+    return json.data;
+  }
+  if (json && json.success === false && (json.responseCode === 404 || /not found/i.test(String(json.message || '')))) {
+    return [];
+  }
+  throw new Error(json?.message || json?.error || 'Unexpected content response');
+}
+
 export async function fetchFolderContent(
   courseId: string,
   folderId: string
-): Promise<{ items: CourseContentItem[]; effectiveCourseId: string }> {
-  try {
-    const json = await fetchWithFallback(`?content=${courseId}&folder=${folderId}&_t=${Date.now()}`);
-    if (json?.success && Array.isArray(json.data) && json.data.length > 0) {
-      return { items: json.data, effectiveCourseId: courseId };
+): Promise<FolderContentResult> {
+  // Newly announced 26-27 NIRBHAY batches have no content of their own yet,
+  // so their root folder falls back to the active counterpart batch.
+  const mappedCourseId =
+    folderId === '0' ? ACTIVE_COURSE_CONTENT_FALLBACK[String(courseId)] : undefined;
+  const candidates = mappedCourseId ? [courseId, mappedCourseId] : [courseId];
+
+  const RETRY_DELAYS_MS = [0, 700, 1800];
+  let serverAnswered = false;
+
+  for (let attempt = 0; attempt < RETRY_DELAYS_MS.length; attempt++) {
+    if (RETRY_DELAYS_MS[attempt] > 0) await wait(RETRY_DELAYS_MS[attempt]);
+
+    let attemptFailed = false;
+    for (const candidateId of candidates) {
+      try {
+        const items = await requestFolderItems(candidateId, folderId);
+        if (items.length > 0) {
+          const result: FolderContentResult = { items, effectiveCourseId: candidateId };
+          writeFolderCache(courseId, folderId, result);
+          return result;
+        }
+      } catch (err) {
+        attemptFailed = true;
+        console.warn(`Content fetch failed (course ${candidateId}, folder ${folderId}, attempt ${attempt + 1})`, err);
+      }
     }
 
-    // If root folder is empty/404 for newly announced 26-27 NIRBHAY batches, fall back to active counterpart
-    if (folderId === '0' && ACTIVE_COURSE_CONTENT_FALLBACK[String(courseId)]) {
-      const mappedCourseId = ACTIVE_COURSE_CONTENT_FALLBACK[String(courseId)];
-      const fallbackJson = await fetchWithFallback(
-        `?content=${mappedCourseId}&folder=0&_t=${Date.now()}`
-      );
-      if (fallbackJson?.success && Array.isArray(fallbackJson.data) && fallbackJson.data.length > 0) {
-        return { items: fallbackJson.data, effectiveCourseId: mappedCourseId };
-      }
-    }
-  } catch (err) {
-    console.error('Content Fetch Error:', err);
-    if (folderId === '0' && ACTIVE_COURSE_CONTENT_FALLBACK[String(courseId)]) {
-      try {
-        const mappedCourseId = ACTIVE_COURSE_CONTENT_FALLBACK[String(courseId)];
-        const fallbackJson = await fetchWithFallback(
-          `?content=${mappedCourseId}&folder=0&_t=${Date.now()}`
-        );
-        if (fallbackJson?.success && Array.isArray(fallbackJson.data)) {
-          return { items: fallbackJson.data, effectiveCourseId: mappedCourseId };
-        }
-      } catch {
-        // ignore
-      }
+    if (!attemptFailed) {
+      // Every server answered cleanly with "nothing here".
+      // Ask once more before believing it, because the upstream occasionally
+      // answers "not found" for a folder that does have content.
+      if (serverAnswered) break;
+      serverAnswered = true;
     }
   }
-  return { items: [], effectiveCourseId: courseId };
+
+  // Could not get a fresh list - show the last list that worked on this device.
+  const cached = readFolderCache(courseId, folderId);
+  if (cached) return cached;
+
+  return { items: [], effectiveCourseId: courseId, failed: !serverAnswered };
 }
 
 export function parseDownloadUrls(downloadUrlsRaw?: string | null): DownloadQuality[] {

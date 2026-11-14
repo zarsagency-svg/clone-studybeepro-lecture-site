@@ -109,6 +109,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
   const [rootFolders, setRootFolders] = useState<CourseContentItem[]>([]);
   const [folderItems, setFolderItems] = useState<CourseContentItem[]>([]);
   const [contentLoading, setContentLoading] = useState(true);
+  const [contentLoadFailed, setContentLoadFailed] = useState(false);
   const [folderHistory, setFolderHistory] = useState<FolderBreadcrumb[]>([
     { id: '0', title: 'Root' },
   ]);
@@ -148,6 +149,7 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
     async (folderId: string, folderTitle?: string, shouldScroll = false) => {
       const requestId = ++folderRequestRef.current;
       setContentLoading(true);
+      setContentLoadFailed(false);
       if (shouldScroll) {
         scrollToContentBrowser();
       }
@@ -167,17 +169,18 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
       });
 
       const targetId = folderId === '0' ? courseId : effectiveCourseIdRef.current;
-      const { items, effectiveCourseId: resolvedId } = await fetchFolderContent(
+      const { items, effectiveCourseId: resolvedId, failed } = await fetchFolderContent(
         targetId,
         String(folderId)
       );
 
       if (requestId !== folderRequestRef.current) return;
-      if (folderId === '0') {
+      if (folderId === '0' && !failed) {
         effectiveCourseIdRef.current = resolvedId;
         setEffectiveCourseId(resolvedId);
         setRootFolders(items);
       }
+      setContentLoadFailed(Boolean(failed));
       setFolderItems(items);
       setContentLoading(false);
       if (shouldScroll) {
@@ -879,6 +882,24 @@ export const BatchContentView: React.FC<BatchContentViewProps> = ({
                       formatDate={formatDate}
                     />
                   ))}
+                </div>
+              ) : contentLoadFailed ? (
+                <div className="glass-surface rounded-[28px] py-16 px-6 text-center max-w-md mx-auto my-6">
+                  <GlassFolderIcon className="w-14 h-14 mx-auto mb-3" />
+                  <h3 className="text-lg font-display font-bold text-[#E6EDFD]">Couldn&apos;t Load Content</h3>
+                  <p className="text-xs text-[#AFC5F8] mt-1">
+                    The server didn&apos;t respond. Your content is still there - check your internet and try again.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = folderHistory[folderHistory.length - 1];
+                      loadFolder(current?.id ?? '0', current?.title ?? 'Root');
+                    }}
+                    className="mt-4 px-5 py-2 rounded-full text-xs font-bold text-[#E6EDFD] bg-[#2E5DE6] hover:bg-[#1A3BB0] transition-colors cursor-pointer"
+                  >
+                    Try Again
+                  </button>
                 </div>
               ) : (
                 <div className="glass-surface rounded-[28px] py-16 px-6 text-center max-w-md mx-auto my-6">
