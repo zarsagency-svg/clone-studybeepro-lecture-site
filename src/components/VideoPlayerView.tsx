@@ -52,7 +52,17 @@ interface QualityOption {
   mp4Url?: string;
 }
 
-const SPEED_OPTIONS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+const SPEED_OPTIONS = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+const SPEED_STORAGE_KEY = 'mindspark_playback_speed';
+
+const readSavedSpeed = (): number => {
+  try {
+    const saved = parseFloat(localStorage.getItem(SPEED_STORAGE_KEY) || '');
+    return SPEED_OPTIONS.includes(saved) ? saved : 1.0;
+  } catch {
+    return 1.0;
+  }
+};
 
 export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   params,
@@ -86,7 +96,50 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
   const [qualityOptions, setQualityOptions] = useState<QualityOption[]>([]);
   const [selectedQualityLabel, setSelectedQualityLabel] = useState('Auto');
-  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(readSavedSpeed);
+  // The chosen speed lives in a ref so that changing it never re-creates the
+  // playback loader (which used to reload the whole video and reset it to 1x).
+  const playbackSpeedRef = useRef(playbackSpeed);
+  const youtubeFrameRef = useRef<HTMLIFrameElement>(null);
+  const [ytSpeedMenuOpen, setYtSpeedMenuOpen] = useState(false);
+
+  // Latest props/state for the loader, read through refs to keep it stable.
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
+  const onOpenPdfRef = useRef(onOpenPdf);
+  onOpenPdfRef.current = onOpenPdf;
+
+  /** Force the <video> element to the speed the user picked. */
+  const applyPlaybackRate = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const rate = playbackSpeedRef.current;
+    try {
+      (video as any).preservesPitch = true;
+      if (video.defaultPlaybackRate !== rate) video.defaultPlaybackRate = rate;
+      if (video.playbackRate !== rate) video.playbackRate = rate;
+    } catch {
+      // ignore - unsupported rate on this browser
+    }
+  }, []);
+
+  /** Send the chosen speed to the embedded YouTube player. */
+  const applyYouTubeRate = useCallback(() => {
+    const frame = youtubeFrameRef.current;
+    if (!frame?.contentWindow) return;
+    try {
+      frame.contentWindow.postMessage(
+        JSON.stringify({
+          event: 'command',
+          func: 'setPlaybackRate',
+          args: [playbackSpeedRef.current],
+        }),
+        '*'
+      );
+    } catch {
+      // ignore
+    }
+  }, []);
   const [downloadQualities, setDownloadQualities] = useState<DownloadQuality[]>([]);
 
   // Visual pop indicators
@@ -157,7 +210,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
       const video = videoRef.current;
       if (!video) return;
       video.src = mp4Url;
-      video.playbackRate = playbackSpeed;
+      applyPlaybackRate();
       if (resumeTime > 0) {
         video.currentTime = resumeTime;
       }
@@ -165,10 +218,11 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
       setLoading(false);
       video.play().catch(() => {});
     },
-    [playbackSpeed]
+    [applyPlaybackRate]
   );
 
   const initPlayback = useCallback(async () => {
+    const params = paramsRef.current;
     cleanupPlayers();
     setLoading(true);
     setErrorMsg(null);
@@ -193,7 +247,12 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
       // If it resolved to a PDF instead of video
       if (resolved.pdfUrl) {
-        onOpenPdf(params.courseId, params.contentId, resolved.title || title, resolved.pdfUrl);
+        onOpenPdfRef.current(
+          params.courseId,
+          params.contentId,
+          resolved.title || params.title || 'MindSpark',
+          resolved.pdfUrl
+        );
         return;
       }
 
@@ -241,6 +300,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
             setQualityOptions(hlsOpts.length > 1 ? hlsOpts : [{ label: 'Auto', type: 'hls-auto', hlsLevelIndex: -1 }, ...mp4Options]);
             setSelectedQualityLabel('Auto');
             setLoading(false);
+            applyPlaybackRate();
             video.play().catch(() => {});
           });
 
@@ -263,6 +323,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
           setQualityOptions([{ label: 'Auto', type: 'hls-auto' }, ...mp4Options]);
           setSelectedQualityLabel('Auto');
           setLoading(false);
+          applyPlaybackRate();
           video.play().catch(() => {});
           return;
         }
@@ -294,6 +355,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
             await shakaPlayer.load(resolved.streamUrl);
             setQualityOptions([{ label: 'Auto (HD)', type: 'hls-auto' }, ...mp4Options]);
             setLoading(false);
+            applyPlaybackRate();
             video.play().catch(() => {});
             return;
           } catch (drmErr) {
@@ -329,7 +391,17 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
       setErrorMsg(err?.message || 'Failed to load video stream');
       setLoading(false);
     }
-  }, [params, onOpenPdf, playDirectMp4, title]);
+    // Only reload when the lecture itself changes - never for speed/UI changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    params.courseId,
+    params.contentId,
+    params.vdcId,
+    params.ytUrl,
+    params.directFileUrl,
+    params.downloadUrlsRaw,
+    playDirectMp4,
+  ]);
 
   useEffect(() => {
     // Ensure 24h verification key is always valid in localStorage just like player.html expects
@@ -458,11 +530,17 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   };
 
   const handleSpeedSelect = (spd: number) => {
+    playbackSpeedRef.current = spd;
     setPlaybackSpeed(spd);
-    if (videoRef.current) {
-      videoRef.current.playbackRate = spd;
+    try {
+      localStorage.setItem(SPEED_STORAGE_KEY, String(spd));
+    } catch {
+      // ignore
     }
+    applyPlaybackRate();
+    applyYouTubeRate();
     setActiveMenu('none');
+    setYtSpeedMenuOpen(false);
   };
 
   const handleZoneTap = (zone: 'left' | 'center' | 'right', e: React.MouseEvent) => {
@@ -577,18 +655,55 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 </button>
                 <div className="text-white font-bold text-sm sm:text-base truncate">{title}</div>
               </div>
-              <a
-                href={`https://www.youtube.com/watch?v=${youtubeId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-1.5 shrink-0 transition-colors"
-              >
-                YouTube <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="relative">
+                  <button
+                    onClick={() => setYtSpeedMenuOpen((open) => !open)}
+                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-bold transition-colors"
+                    title="Playback speed"
+                  >
+                    {playbackSpeed}x
+                  </button>
+                  {ytSpeedMenuOpen && (
+                    <div className="absolute top-10 right-0 w-28 p-1.5 rounded-xl bg-[#111111]/95 backdrop-blur-xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 flex flex-col gap-0.5">
+                      {SPEED_OPTIONS.map((spd) => {
+                        const isSelected = playbackSpeed === spd;
+                        return (
+                          <button
+                            key={spd}
+                            onClick={() => handleSpeedSelect(spd)}
+                            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold transition-colors ${
+                              isSelected
+                                ? 'bg-themeRed/10 text-themeRed'
+                                : 'text-zinc-300 hover:bg-white/10'
+                            }`}
+                          >
+                            <span>{spd}x</span>
+                            {isSelected && <Check className="w-3.5 h-3.5" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                <a
+                  href={`https://www.youtube.com/watch?v=${youtubeId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-1.5 shrink-0 transition-colors"
+                >
+                  YouTube <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
             <div className="flex-1 w-full h-full relative">
               <iframe
-                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+                ref={youtubeFrameRef}
+                onLoad={() => {
+                  // The YouTube player needs a moment before it accepts commands.
+                  [500, 1500, 3000, 6000].forEach((ms) => window.setTimeout(applyYouTubeRate, ms));
+                }}
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
                 className="w-full h-full border-0"
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                 allowFullScreen
@@ -612,8 +727,22 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 if (videoRef.current) {
                   setDuration(videoRef.current.duration || 0);
                 }
+                applyPlaybackRate();
+              }}
+              onDurationChange={() => {
+                const d = videoRef.current?.duration;
+                if (d && isFinite(d)) setDuration(d);
+              }}
+              onRateChange={() => {
+                // Browsers/players reset the rate to 1x when a source (re)loads.
+                // A rate of 0 is the DRM player pausing to buffer - leave that alone.
+                const v = videoRef.current;
+                if (v && v.playbackRate !== 0 && v.playbackRate !== playbackSpeedRef.current) {
+                  applyPlaybackRate();
+                }
               }}
               onPlay={() => {
+                applyPlaybackRate();
                 setIsPlaying(true);
                 setBuffering(false);
                 scheduleHideControls(false);
@@ -623,8 +752,14 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 setControlsVisible(true);
               }}
               onWaiting={() => setBuffering(true)}
-              onPlaying={() => setBuffering(false)}
-              onCanPlay={() => setBuffering(false)}
+              onPlaying={() => {
+                setBuffering(false);
+                applyPlaybackRate();
+              }}
+              onCanPlay={() => {
+                setBuffering(false);
+                applyPlaybackRate();
+              }}
               onError={() => {
                 setBuffering(false);
                 setLoading(false);
